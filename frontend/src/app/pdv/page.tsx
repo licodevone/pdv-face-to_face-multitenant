@@ -1337,6 +1337,45 @@ export default function HomePage() {
   const deferredSearch = useDeferredValue(productSearch);
   const operatorMenuRef = useRef<HTMLDetailsElement | null>(null);
 
+  const [isCartLoaded, setIsCartLoaded] = useState(false);
+
+  useEffect(() => {
+    try {
+      const savedCart = window.localStorage.getItem("pdv-cart-items");
+      if (savedCart) {
+        setCartItems(JSON.parse(savedCart));
+      }
+      const savedPayments = window.localStorage.getItem("pdv-payments");
+      if (savedPayments) {
+        setPayments(JSON.parse(savedPayments));
+      }
+      const savedDiscount = window.localStorage.getItem("pdv-discount");
+      if (savedDiscount) {
+        setDiscount(savedDiscount);
+      }
+      const savedCustomerId = window.localStorage.getItem("pdv-customer-id");
+      if (savedCustomerId) {
+        setSelectedCustomerId(savedCustomerId);
+      }
+    } catch (e) {
+      console.error("Erro ao carregar dados do localStorage:", e);
+    } finally {
+      setIsCartLoaded(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isCartLoaded) return;
+    try {
+      window.localStorage.setItem("pdv-cart-items", JSON.stringify(cartItems));
+      window.localStorage.setItem("pdv-payments", JSON.stringify(payments));
+      window.localStorage.setItem("pdv-discount", discount);
+      window.localStorage.setItem("pdv-customer-id", selectedCustomerId);
+    } catch (e) {
+      console.error("Erro ao salvar dados no localStorage:", e);
+    }
+  }, [cartItems, payments, discount, selectedCustomerId, isCartLoaded]);
+
   useEffect(() => {
     setIsCreatePanelOpen(false);
   }, [activeModal]);
@@ -1466,7 +1505,7 @@ export default function HomePage() {
   const canAddPayment =
     isSaleInProgress &&
     !hasCartStockIssue &&
-    allRowsAmountInCents >= totalInCents &&
+    allRowsAmountInCents >= Math.max(totalInCents - paidInCents, 0) &&
     !isLoading &&
     !isCashOperationLocked;
   const canFinalizeSale =
@@ -5063,11 +5102,20 @@ export default function HomePage() {
                         setExtraPaymentRows((prev) => {
                           const needed = n - 1;
                           if (prev.length >= needed) return prev.slice(0, needed);
-                          const missingRows: typeof prev = Array.from({ length: needed - prev.length }, () => ({
-                            method: "CASH",
-                            amount: "",
-                          }));
-                          return [...prev, ...missingRows];
+                          
+                          const updated = [...prev];
+                          const usedMethods: PaymentInput["method"][] = [paymentMethod, ...updated.map(r => r.method)];
+                          
+                          while (updated.length < needed) {
+                            const available = ALL_PAYMENT_METHODS.find((m) => !usedMethods.includes(m.value));
+                            const nextMethod = available ? available.value : "CASH";
+                            usedMethods.push(nextMethod);
+                            updated.push({
+                              method: nextMethod,
+                              amount: "",
+                            });
+                          }
+                          return updated;
                         });
                       }}
                     />
@@ -5083,11 +5131,24 @@ export default function HomePage() {
                 <span>Pagamento</span>
                 <select
                   value={paymentMethod}
-                  onChange={(event) => setPaymentMethod(event.target.value as PaymentInput["method"])}
+                  onChange={(event) => {
+                    const newMethod = event.target.value as PaymentInput["method"];
+                    setPaymentMethod(newMethod);
+                    setExtraPaymentRows((prev) => {
+                      const chosen: PaymentInput["method"][] = [newMethod];
+                      return prev.map((row) => {
+                        let currentMethod = row.method;
+                        if (chosen.includes(currentMethod)) {
+                          const available = ALL_PAYMENT_METHODS.find((m) => !chosen.includes(m.value));
+                          currentMethod = available ? available.value : currentMethod;
+                        }
+                        chosen.push(currentMethod);
+                        return { ...row, method: currentMethod };
+                      });
+                    });
+                  }}
                 >
-                  {ALL_PAYMENT_METHODS.filter(
-                    (m) => !extraPaymentRows.slice(0, installments - 1).some((r) => r.method === m.value),
-                  ).map((m) => (
+                  {ALL_PAYMENT_METHODS.map((m) => (
                     <option key={m.value} value={m.value}>{m.label}</option>
                   ))}
                 </select>
@@ -5111,25 +5172,34 @@ export default function HomePage() {
                   <span>Pagamento</span>
                   <select
                     value={row.method}
-                    onChange={(event) =>
-                      setExtraPaymentRows((prev) =>
-                        prev.map((r, idx) =>
-                          idx === i
-                            ? { ...r, method: event.target.value as PaymentInput["method"] }
-                            : r,
-                        ),
-                      )
-                    }
+                    onChange={(event) => {
+                      const newMethod = event.target.value as PaymentInput["method"];
+                      setExtraPaymentRows((prev) => {
+                        const chosen: PaymentInput["method"][] = [paymentMethod];
+                        return prev.map((r, idx) => {
+                          if (idx === i) {
+                            chosen.push(newMethod);
+                            return { ...r, method: newMethod };
+                          }
+                          let currentMethod = r.method;
+                          if (chosen.includes(currentMethod)) {
+                            const available = ALL_PAYMENT_METHODS.find((m) => !chosen.includes(m.value));
+                            currentMethod = available ? available.value : currentMethod;
+                          }
+                          chosen.push(currentMethod);
+                          return { ...r, method: currentMethod };
+                        });
+                      });
+                    }}
                   >
-                  {ALL_PAYMENT_METHODS.filter((m) => {
-                      const usedByOthers = [
+                    {ALL_PAYMENT_METHODS.filter((m) => {
+                      const usedByPrevious = [
                         paymentMethod,
                         ...extraPaymentRows
-                          .slice(0, installments - 1)
-                          .filter((_, idx) => idx !== i)
+                          .slice(0, i)
                           .map((r) => r.method),
                       ];
-                      return !usedByOthers.includes(m.value);
+                      return !usedByPrevious.includes(m.value);
                     }).map((m) => (
                       <option key={m.value} value={m.value}>{m.label}</option>
                     ))}
