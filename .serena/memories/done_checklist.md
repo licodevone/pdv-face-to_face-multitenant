@@ -1,0 +1,1 @@
+Após alterações de código: rodar `pnpm typecheck`; rodar `pnpm eslint` quando deps lint estiverem íntegras; validar fluxo impactado (frontend login/bootstrap e chamadas API); revisar diff final antes de concluir.

@@ -1,0 +1,17 @@
+name: pdv-multitenant-3.0
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: pdv-multitenant
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: pdv-multi
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-data:

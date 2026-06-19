@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Frente de caixa" description="PDV Face Delivery point-of-sale screen — catalog, cart and checkout, ready to extend" -->
+<helmet>
+  <script src="./ds-base.js"></script>
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <style>
+    /* Responsive layout */
+    @media (max-width: 1100px) {
+      .pdv-main-layout { grid-template-columns: 1fr !important; }
+      .pdv-checkout-panel { position: static !important; top: auto !important; }
+    }
+    @media (max-width: 860px) {
+      .pdv-chips-grid { grid-template-columns: repeat(3, 1fr) !important; }
+      .pdv-manager-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    }
+    @media (max-width: 600px) {
+      .pdv-shell-root { padding: 0.5rem !important; gap: 0.5rem !important; }
+      .pdv-chips-grid { grid-template-columns: repeat(2, 1fr) !important; }
+      .pdv-topbar-brand h1 { font-size: 1.1rem !important; }
+      .pdv-topbar-eyebrow { display: none !important; }
+      .pdv-op-name { display: none !important; }
+      .pdv-pay-row { grid-template-columns: 1fr 1fr !important; }
+      .pdv-pay-addbtn { grid-column: 1 / -1 !important; }
+      .pdv-metrics-grid { grid-template-columns: 1fr 1fr !important; }
+      .pdv-footer-support { font-size: 0.75rem !important; }
+    }
+  </style>
+</helmet>
+<div class="pdv-shell-root" style="display:grid; gap:0.75rem; min-height:100vh; padding:0.85rem clamp(0.85rem,3vw,2.2rem); font-family:var(--font-sans); color:var(--text);">
+
+  <header style="display:flex; align-items:center; justify-content:space-between; gap:0.75rem; border-radius:var(--radius-xl); border:1px solid var(--button-border); padding:0.65rem 0.85rem; color:#f8fafc; background:linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 100%), var(--panel-gradient); box-shadow:0 0 0.8rem rgba(96,165,250,0.2), var(--shadow);">
+    <div style="display:flex; align-items:center; gap:0.75rem;">
+      <img src="../../assets/brand-logo-white.svg" alt="logo" style="height:50px; width:50px; filter:drop-shadow(0 10px 18px rgba(15,23,42,0.2));">
+      <div>
+        <p style="margin:0 0 1px; font-size:0.7rem; font-weight:900; letter-spacing:0.16em; text-transform:uppercase; color:#fff; text-shadow:0 1px 2px rgba(15,23,42,0.45);">Multitenant · {{ storeName }}</p>
+        <h1 style="margin:0; font-size:1.5rem; letter-spacing:-0.05em; color:#f8fafc;">Face Delivery</h1>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:0.55rem;">
+      <div style="position:relative;">
+        <button onClick="{{ toggleOpMenu }}" style="display:flex; align-items:center; gap:0.5rem; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.18); border-radius:var(--radius-lg); padding:0.4rem 0.65rem; cursor:pointer; color:#fff; min-width:13rem;">
+          <span style="height:2rem; width:2rem; border-radius:50%; display:grid; place-items:center; background:rgba(255,255,255,0.2); color:#fff; font-weight:900; font-size:0.78rem; flex-shrink:0;">{{ sessionInitials }}</span>
+          <span class="pdv-op-name" style="display:grid; gap:1px; flex:1; min-width:0;">
+            <small style="color:#e2e8f0; font-size:0.6rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase;">{{ sessionRole }}</small>
+            <strong style="color:#fff; font-size:0.84rem; line-height:1.05;">{{ sessionName }}</strong>
+          </span>
+          <i data-lucide="chevron-down" style="width:14px;height:14px;flex-shrink:0;transition:transform 0.18s ease;"></i>
+        </button>
+
+        <div class="{{ opMenuHiddenClass }}" style="position:absolute; right:0; top:calc(100% + 0.35rem); min-width:13rem; background:color-mix(in srgb,var(--surface) 96%,transparent); border:1px solid var(--line); border-radius:var(--radius-lg); box-shadow:var(--shadow); padding:0.3rem; z-index:50; display:grid; gap:0.15rem;">
+          <button onClick="{{ closeOpMenu }}" style="display:flex; align-items:center; gap:0.55rem; background:transparent; border:0; border-radius:0.55rem; color:var(--text); cursor:pointer; font-weight:700; font-size:0.85rem; padding:0.5rem 0.6rem; text-align:left; width:100%;">
+            <i data-lucide="refresh-cw" style="width:14px;height:14px;color:var(--muted);"></i> Atualizar painel
+          </button>
+          <button onClick="{{ goToPerfil }}" style="display:flex; align-items:center; gap:0.55rem; background:transparent; border:0; border-radius:0.55rem; color:var(--text); cursor:pointer; font-weight:700; font-size:0.85rem; padding:0.5rem 0.6rem; text-align:left; width:100%;">
+            <i data-lucide="user-cog" style="width:14px;height:14px;color:var(--muted);"></i> Perfil do operador
+          </button>
+          <div style="height:1px; background:var(--line); margin:0.2rem 0.3rem;"></div>
+          <button onClick="{{ goToAdmin }}" style="display:flex; align-items:center; gap:0.55rem; background:color-mix(in srgb,var(--accent) 8%,transparent); border:0; border-radius:0.55rem; color:var(--accent-soft); cursor:pointer; font-weight:800; font-size:0.85rem; padding:0.5rem 0.6rem; text-align:left; width:100%;">
+            <i data-lucide="shield-check" style="width:14px;height:14px;"></i> Administração do sistema
+          </button>
+          <div style="height:1px; background:var(--line); margin:0.2rem 0.3rem;"></div>
+          <button onClick="{{ doLogout }}" style="display:flex; align-items:center; gap:0.55rem; background:transparent; border:0; border-radius:0.55rem; color:var(--danger); cursor:pointer; font-weight:700; font-size:0.85rem; padding:0.5rem 0.6rem; text-align:left; width:100%;">
+            <i data-lucide="log-out" style="width:14px;height:14px;"></i> Sair
+          </button>
+        </div>
+      </div>
+      <button onClick="{{ toggleTheme }}" title="{{ themeLabel }}" style="display:inline-flex; align-items:center; justify-content:center; height:2.5rem; min-width:2.5rem; border-radius:var(--radius-md); background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.18); color:#fff; font-size:1.1rem; cursor:pointer; transition:background 0.18s ease;">{{ themeIcon }}</button>
+    </div>
+  </header>
+
+  <div class="pdv-main-layout" style="display:grid; gap:0.75rem; grid-template-columns:minmax(0,1.35fr) minmax(360px,0.72fr);">
+
+    <section style="background:color-mix(in srgb, var(--surface) 92%, transparent); border:1px solid var(--line); border-radius:var(--radius-xl); box-shadow:var(--shadow); padding:0.9rem; display:grid; gap:0.8rem; align-content:start;">
+      <div class="pdv-metrics-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:0.58rem;">
+        <div style="background:color-mix(in srgb, var(--accent) 10%, var(--surface-soft)); border:1px solid var(--line); border-radius:var(--radius-lg); display:grid; gap:0.3rem; padding:0.7rem;">
+          <small style="color:var(--muted); font-size:0.72rem; font-weight:800; text-transform:uppercase;">Sessão do caixa</small>
+          <strong style="color:var(--text); font-size:1.3rem; letter-spacing:-0.03em;">Caixa aberto</strong>
+          <span style="color:var(--muted); font-size:0.62rem;">Desde 08:14 · PDV-01</span>
+        </div>
+        <div style="background:color-mix(in srgb, var(--surface-soft) 92%, transparent); border:1px solid var(--line); border-radius:var(--radius-lg); display:grid; gap:0.3rem; padding:0.7rem;">
+          <small style="color:var(--muted); font-size:0.72rem; font-weight:800; text-transform:uppercase;">Produtos ativos</small>
+          <strong style="color:var(--text); font-size:1.3rem; letter-spacing:-0.03em;">{{ productCount }}</strong>
+          <span style="color:var(--muted); font-size:0.62rem;">2 com alerta de estoque</span>
+        </div>
+        <div style="background:color-mix(in srgb, var(--success) 10%, var(--surface-soft)); border:1px solid var(--line); border-radius:var(--radius-lg); display:grid; gap:0.3rem; padding:0.7rem;">
+          <small style="color:var(--muted); font-size:0.72rem; font-weight:800; text-transform:uppercase;">Ticket médio</small>
+          <strong style="color:var(--text); font-size:1.3rem; letter-spacing:-0.03em;">R$ 48,90</strong>
+          <span style="color:var(--muted); font-size:0.62rem;">32 venda(s) no período</span>
+        </div>
+      </div>
+
+      <div>
+        <h2 style="letter-spacing:-0.04em; margin:0; font-size:1.3rem;">Catálogo</h2>
+        <p style="color:var(--muted); margin:2px 0 0; font-size:0.82rem;">Toque em um produto para adicionar ao carrinho.</p>
+      </div>
+
+      <div class="pdv-chips-grid" style="display:grid; grid-template-columns:repeat(4,1fr); gap:0.55rem;">
+        <sc-for list="{{ cats }}" as="c" hint-placeholder-count="8">
+          <button type="button" onClick="{{ c.select }}" class="pdv-chip {{ c.activeClass }}" style="min-height:110px;">
+            <span class="pdv-chip__label">
+              <i data-lucide="{{ c.icon }}" style="width:18px;height:18px;flex-shrink:0;"></i>
+              {{ c.label }}
+            </span>
+            <small>{{ c.countText }}</small>
+          </button>
+        </sc-for>
+      </div>
+
+      <div style="background:color-mix(in srgb, var(--surface-soft) 92%, transparent); border:1px solid var(--line); border-radius:var(--radius-lg); padding:0.55rem 0.7rem; display:flex; align-items:center; gap:0.5rem;">
+        <span style="color:var(--muted); font-weight:800; font-size:0.9rem;">⌕</span>
+        <input value="{{ query }}" onInput="{{ onSearch }}" placeholder="Buscar por nome, SKU ou código de barras…" style="border:0; background:transparent; padding:0.2rem 0; box-shadow:none; color:var(--text); width:100%;">
+      </div>
+
+      <div style="display:grid; gap:0.7rem; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); max-height:58vh; overflow:auto; padding-right:0.25rem;">
+        <sc-for list="{{ visibleProducts }}" as="p" hint-placeholder-count="8">
+          <button type="button" onClick="{{ p.add }}" class="pdv-product" style="min-height:170px; padding:0.55rem;">
+            <div class="pdv-product__media" style="min-height:3rem;"><img src="{{ p.img }}" alt="{{ p.name }}" style="height:3rem;"></div>
+            <div class="pdv-product__name" style="font-size:0.72rem; line-height:1.35; -webkit-line-clamp:3; font-weight:700; word-break:break-word;">{{ p.name }}</div>
+            <div class="{{ p.stockColorClass }}" style="font-size:0.62rem; font-weight:700; font-variant-numeric:tabular-nums;">⊙ {{ p.stockLabel }} em estoque</div>
+            <div class="pdv-product__foot">
+              <span class="pdv-product__price">{{ p.price }}</span>
+              <span class="pdv-badge {{ p.badgeClass }}"><span class="pdv-badge__dot"></span>{{ p.badgeText }}</span>
+            </div>
+          </button>
+        </sc-for>
+      </div>
+    </section>
+
+    <aside class="pdv-checkout-panel" style="background:var(--checkout-panel-bg); border:1px solid var(--line); border-radius:var(--radius-xl); box-shadow:var(--shadow); padding:0.9rem; display:grid; gap:0.65rem; align-self:start; position:sticky; top:0.5rem;">
+      <div style="display:flex; align-items:center; justify-content:space-between;">
+        <h2 style="margin:0; font-size:1.2rem; letter-spacing:-0.04em;">Carrinho</h2>
+        <span class="pdv-badge pdv-badge--neutral">{{ itemCount }} itens</span>
+      </div>
+
+      <div style="background:var(--cart-panel-bg); border:1px solid var(--cart-panel-line); border-radius:var(--radius-lg); padding:0.6rem; display:grid; gap:0.35rem; max-height:17rem; overflow:hidden;">
+        <p style="margin:0; color:var(--accent-soft); font-size:0.74rem; font-weight:900; letter-spacing:0.16em; text-transform:uppercase;">Itens da venda</p>
+        <sc-if value="{{ hasItems }}" hint-placeholder-val="{{ true }}">
+          <div style="display:grid; gap:0.3rem; overflow-y:auto; align-content:start; padding-right:0.25rem;">
+            <sc-for list="{{ cartRows }}" as="i" hint-placeholder-count="3">
+              <div onClick="{{ i.remove }}" title="Remover" style="display:grid; grid-template-columns:minmax(0,1fr) auto auto; gap:0.55rem; align-items:center; border-radius:var(--radius-sm); padding:0.3rem 0.5rem; cursor:pointer; background:var(--cart-row-zebra-odd);">
+                <span style="color:var(--text); font-weight:700; font-size:0.82rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ i.name }}</span>
+                <span style="color:var(--muted); font-size:0.74rem; font-weight:800; font-variant-numeric:tabular-nums;">{{ i.qty }}×</span>
+                <span style="color:var(--text); font-weight:800; font-variant-numeric:tabular-nums; min-width:84px; text-align:right;">{{ i.total }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid; justify-items:center; gap:0.4rem; padding:0.6rem; text-align:center;">
+            <img src="../../assets/empty-cart-image.png" alt="" style="height:4.4rem; width:auto; opacity:0.9;">
+            <span style="color:var(--muted); font-size:0.82rem;">Carrinho vazio. Adicione produtos do catálogo.</span>
+          </div>
+        </sc-if>
+      </div>
+
+      <label style="display:grid; gap:0.45rem;">
+        <span style="color:var(--muted); font-size:0.88rem; font-weight:600;">Cliente</span>
+        <select class="pdv-select" value="{{ selectedCustomerId }}" onChange="{{ onCustomerChange }}">
+          <sc-for list="{{ customerOptions }}" as="opt" hint-placeholder-count="6">
+            <option value="{{ opt.id }}">{{ opt.label }}</option>
+          </sc-for>
+        </select>
+      </label>
+
+      <div class="pdv-pay-row" style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
+        <label style="display:grid; gap:0.45rem;">
+          <span style="color:var(--muted); font-size:0.88rem; font-weight:600;">Pagamento</span>
+          <select class="pdv-select">
+            <option>Dinheiro</option>
+            <option>Pix</option>
+            <option>Cartão TEF</option>
+            <option>Fiado</option>
+          </select>
+        </label>
+        <label style="display:grid; gap:0.45rem;">
+          <span style="color:var(--muted); font-size:0.88rem; font-weight:600;">Valor recebido</span>
+          <input class="pdv-input" placeholder="0,00" inputmode="numeric">
+        </label>
+      </div>
+
+      <div style="border-radius:var(--radius-lg); padding:0.75rem 0.85rem; color:#fff; background:var(--button-gradient-hover); border:1px solid rgba(255,255,255,0.26); box-shadow:var(--glow-soft); display:flex; align-items:center; justify-content:space-between;">
+        <small style="color:rgba(255,255,255,0.82); font-size:0.72rem; text-transform:uppercase; font-weight:800; letter-spacing:0.04em;">Total a pagar</small>
+        <strong style="font-size:2rem; letter-spacing:-0.05em; font-variant-numeric:tabular-nums;">{{ subtotalLabel }}</strong>
+      </div>
+
+      <button type="button" onClick="{{ finalize }}" class="pdv-btn pdv-btn--primary pdv-btn--block pdv-btn--lg">✓ Finalizar venda</button>
+    </aside>
+  </div>
+
+  <footer style="display:flex; justify-content:center; padding:0.35rem clamp(0.85rem,3vw,2.2rem) 0.6rem;">
+    <div style="width:100%; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; border-radius:var(--radius-xl); border:1px solid var(--button-border); padding:0.6rem 1rem; background:linear-gradient(180deg,rgba(255,255,255,0.16) 0%,rgba(255,255,255,0.06) 100%),var(--panel-gradient); box-shadow:0 0 0.7rem rgba(96,165,250,0.22),0 0 1.8rem rgba(37,99,235,0.18),var(--shadow);">
+      <div style="display:flex; align-items:center; gap:0.6rem;">
+        <img src="../../assets/brand-logo-white.svg" alt="logo" style="height:28px;width:28px;">
+        <div>
+          <strong style="color:#fff; font-size:0.78rem; font-weight:900; letter-spacing:0.04em; text-transform:uppercase; display:block;">PDV Face Delivery</strong>
+          <span style="color:rgba(255,255,255,0.82); font-size:0.62rem;">Suporte do desenvolvedor, atualizações do sistema e atendimento técnico.</span>
+        </div>
+      </div>
+      <a href="https://wa.me/5512988601020" target="_blank" rel="noreferrer" class="pdv-footer-support" style="display:inline-flex; align-items:center; gap:0.45rem; color:#fff; text-decoration:none; font-weight:800; font-size:0.88rem;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        +55 (12) 98860-1020
+      </a>
+    </div>
+  </footer>
+
+  <div class="{{ toastHiddenClass }}" style="position:fixed; left:50%; top:1.2rem; transform:translateX(-50%); z-index:200; max-width:min(92vw,480px); width:max-content; background:color-mix(in srgb,var(--danger) 92%,#111827); border:1px solid rgba(255,255,255,0.28); border-radius:var(--radius-md); box-shadow:var(--shadow); color:#fff; font-size:0.86rem; font-weight:900; padding:0.8rem 1.1rem; text-align:center;">{{ toastMsg }}</div>
+
+  <div class="{{ managerHiddenClass }}" style="position:fixed; inset:0; background:rgba(5,12,28,0.72); backdrop-filter:blur(8px); display:flex; align-items:flex-start; justify-content:center; overflow-y:auto; padding:1.5rem 0.5rem 0.5rem; z-index:120;">
+      <div style="background:color-mix(in srgb, var(--surface-soft) 96%, transparent); border:1px solid var(--line); border-radius:var(--radius-xl); box-shadow:0 36px 90px rgba(5,12,28,0.34); display:grid; grid-template-rows:auto 1fr; overflow:hidden; width:min(1100px,100%); min-height:min(36rem,80vh);">
+
+        <header style="background:linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 100%), var(--panel-gradient); border-bottom:1px solid rgba(255,255,255,0.22); padding:0.9rem 1.3rem; display:flex; align-items:center; justify-content:space-between;">
+          <div>
+            <p style="margin:0 0 2px; color:rgba(248,250,252,0.95); font-size:0.74rem; font-weight:900; letter-spacing:0.16em; text-transform:uppercase;">Menu gerencial</p>
+            <h2 style="margin:0; color:#fff; font-size:1.55rem; letter-spacing:-0.05em;">{{ managerTitle }}</h2>
+            <p style="margin:2px 0 0; color:rgba(248,250,252,0.9); font-size:0.82rem;">{{ managerSubtitle }}</p>
+          </div>
+          <div style="display:flex; gap:0.5rem;">
+            <button onClick="{{ goBack }}" class="pdv-btn pdv-btn--secondary pdv-btn--sm {{ backHiddenClass }}">← Voltar</button>
+            <button onClick="{{ closeManager }}" class="pdv-btn pdv-btn--secondary pdv-btn--sm">Fechar</button>
+          </div>
+        </header>
+
+        <div style="padding:1.3rem; display:grid; gap:0.6rem; overflow:auto;">
+
+          <div class="{{ menuHiddenClass }}" style="display:grid; gap:0.6rem; grid-template-columns:1fr;">
+            <sc-for list="{{ managerGroups }}" as="grp" hint-placeholder-count="3">
+              <div style="background:color-mix(in srgb, var(--surface-soft) 92%, transparent); border:1px solid var(--line); border-radius:var(--radius-lg); display:grid; gap:0.65rem; padding:0.6rem;">
+                <h3 style="margin:0; font-size:0.72rem; font-weight:900; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted);">{{ grp.label }}</h3>
+                <div class="pdv-manager-grid" style="display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:0.6rem;">
+                  <sc-for list="{{ grp.items }}" as="tile" hint-placeholder-count="3">
+                    <button onClick="{{ tile.open }}" style="background:linear-gradient(180deg,var(--button-bg) 0%,var(--button-bg-strong) 100%); border:1px solid color-mix(in srgb,var(--accent) 38%,transparent); border-radius:var(--radius-lg); box-shadow:0 0 0.55rem color-mix(in srgb,var(--accent) 28%,transparent),0 14px 32px color-mix(in srgb,var(--accent) 20%,transparent); color:#fff; cursor:pointer; display:grid; gap:0.4rem; padding:0.6rem; text-align:left; transition:transform 0.18s ease,box-shadow 0.18s ease;">
+                      <div style="display:flex; align-items:center; gap:0.45rem;">
+                        <i data-lucide="{{ tile.icon }}" style="width:16px;height:16px;flex-shrink:0;"></i>
+                        <strong style="font-size:0.9rem; font-weight:900; line-height:1.1; color:#fff;">{{ tile.label }}</strong>
+                      </div>
+                      <span style="font-size:0.74rem; color:rgba(255,255,255,0.82); line-height:1.35;">{{ tile.description }}</span>
+                    </button>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div class="{{ stockViewHiddenClass }}" style="display:grid; gap:0.5rem;">
+            <p style="margin:0; color:var(--muted); font-size:0.82rem;">Ajuste o saldo de estoque de cada produto. A venda abate automaticamente.</p>
+            <div style="display:grid; gap:0.35rem; max-height:28rem; overflow-y:auto; padding-right:0.25rem;">
+              <sc-for list="{{ stockProducts }}" as="s" hint-placeholder-count="6">
+                <div style="display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:0.6rem; background:color-mix(in srgb,var(--surface) 94%,transparent); border:1px solid var(--line); border-radius:var(--radius-md); padding:0.5rem 0.7rem;">
+                  <div style="display:flex; align-items:center; gap:0.55rem; min-width:0;">
+                    <img src="{{ s.img }}" alt="{{ s.name }}" style="width:2.4rem; height:2.4rem; object-fit:contain; background:#fff; border-radius:0.4rem; flex-shrink:0;">
+                    <div style="min-width:0;">
+                      <div style="font-size:0.82rem; font-weight:700; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ s.name }}</div>
+                      <div class="{{ s.stockColorClass }}" style="font-size:0.72rem; font-weight:800; font-variant-numeric:tabular-nums;">{{ s.stockLabel }}</div>
+                    </div>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.35rem; flex-shrink:0;">
+                    <button onClick="{{ s.dec }}" class="pdv-btn pdv-btn--ghost pdv-btn--sm" style="min-width:2rem; padding:0.4rem 0.55rem;">−</button>
+                    <button onClick="{{ s.inc }}" class="pdv-btn pdv-btn--ghost pdv-btn--sm" style="min-width:2rem; padding:0.4rem 0.55rem;">+</button>
+                    <button onClick="{{ s.addTen }}" class="pdv-btn pdv-btn--secondary pdv-btn--sm">+10</button>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div class="{{ genericViewHiddenClass }}" style="display:grid; gap:0.6rem; grid-template-columns:1fr;">
+            <div style="background:color-mix(in srgb, var(--surface-soft) 92%, transparent); border:1px solid var(--line); border-radius:var(--radius-lg); padding:1.5rem; display:grid; gap:1rem; justify-items:center; text-align:center; min-height:16rem; align-content:center;">
+              <i data-lucide="{{ activeViewIcon }}" style="width:48px;height:48px;color:var(--accent);"></i>
+              <h3 style="margin:0; letter-spacing:-0.04em; color:var(--text);">{{ managerTitle }}</h3>
+              <p style="margin:0; color:var(--muted); max-width:38rem; line-height:1.6;">{{ managerViewDesc }}</p>
+              <span style="display:inline-flex; align-items:center; gap:0.4rem; background:color-mix(in srgb,var(--accent) 12%,transparent); border:1px solid color-mix(in srgb,var(--accent) 22%,transparent); border-radius:var(--radius-pill); color:var(--accent-soft); font-size:0.72rem; font-weight:800; padding:0.5rem 0.7rem; letter-spacing:0.04em; text-transform:uppercase;">Em construção · Estenda aqui</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:860},&quot;storeName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Loja Centro&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  state = {
+    cat: "TODOS",
+    query: "",
+    theme: "dark",
+    toast: "",
+    sessionUser: null,
+    opMenuOpen: false,
+    managerOpen: false,
+    managerView: null,   // null = menu, string = specific view
+    cart: [
+      { id: "p1", name: "Arroz branco tipo 1 5kg", priceInCents: 2790, qty: 1 },
+      { id: "p11", name: "Cerveja pilsen lata 350ml", priceInCents: 399, qty: 6 },
+    ],
+  };
+
+  products = [
+    { id: "p1",  name: "Arroz branco tipo 1 pacote 5kg",  cat: "ALIMENTOS",  priceInCents: 2790, stock: 42,  unit: "un", img: "sku-arroz-5kg.png" },
+    { id: "p2",  name: "Café torrado e moído 500g",       cat: "ALIMENTOS",  priceInCents: 1890, stock: 3,   unit: "un", img: "sku-cafe-500g.png" },
+    { id: "p5",  name: "Achocolatado em pó 400g",         cat: "ALIMENTOS",  priceInCents: 999,  stock: 18,  unit: "un", img: "sku-achocolatado-400g.png" },
+    { id: "p4",  name: "Atum ralado em óleo 170g",        cat: "ALIMENTOS",  priceInCents: 799,  stock: 25,  unit: "un", img: "sku-atum-170g.png" },
+    { id: "p6",  name: "Chocolate ao leite barra 90g",    cat: "SOBREMESAS", priceInCents: 650,  stock: 11,  unit: "un", img: "sku-chocolate-barra-90g.png" },
+    { id: "p7",  name: "Banana prata (kg)",               cat: "ALIMENTOS",  priceInCents: 649,  stock: 8.5, unit: "kg", img: "sku-banana-kg.png" },
+    { id: "p10", name: "Água mineral sem gás 1,5L",       cat: "BEBIDAS",    priceInCents: 250,  stock: 60,  unit: "un", img: "sku-agua-mineral-1500ml.png" },
+    { id: "p11", name: "Cerveja pilsen lata 350ml",       cat: "BEBIDAS",    priceInCents: 399,  stock: 24,  unit: "un", img: "sku-cerveja-lata-350ml.png" },
+    { id: "p12", name: "Bebida energética 269ml",         cat: "BEBIDAS",    priceInCents: 799,  stock: 9,   unit: "un", img: "sku-energetico-269ml.png" },
+    { id: "p13", name: "Detergente neutro 500ml",         cat: "LIMPEZA",    priceInCents: 320,  stock: 15,  unit: "un", img: "sku-detergente-500ml.png" },
+    { id: "p14", name: "Amaciante concentrado 2L",        cat: "LIMPEZA",    priceInCents: 1490, stock: 0,   unit: "un", img: "sku-amaciante-2l.png" },
+    { id: "p15", name: "Água sanitária multiuso 1L",      cat: "LIMPEZA",    priceInCents: 390,  stock: 7,   unit: "un", img: "sku-agua-sanitaria-1l.png" },
+    { id: "p16", name: "Condicionador hidratante 350ml",  cat: "PETSHOP",    priceInCents: 1190, stock: 6,   unit: "un", img: "sku-condicionador-350ml.png" },
+    { id: "p17", name: "Ração canina adulto 1kg",         cat: "PETSHOP",    priceInCents: 2490, stock: 2,   unit: "un", img: "product-without-image.png" },
+    { id: "p18", name: "Areia higiênica gatos 4kg",       cat: "PETSHOP",    priceInCents: 1890, stock: 4,   unit: "un", img: "product-without-image.png" },
+    { id: "p19", name: "Biscoito recheado chocolate 130g",cat: "BAZAR",      priceInCents: 450,  stock: 30,  unit: "un", img: "sku-biscoito-recheado-130g.png" },
+    { id: "p20", name: "Biscoito água e sal 200g",        cat: "BAZAR",      priceInCents: 380,  stock: 22,  unit: "un", img: "sku-biscoito-agua-sal-200g.png" },
+    { id: "p21", name: "Ervilha em conserva lata 200g",   cat: "BAZAR",      priceInCents: 520,  stock: 14,  unit: "un", img: "sku-ervilha-200g.png" },
+  ];
+
+  customers = [
+    { id: "0",  name: "Consumidor Final",       cpf: "" },
+    { id: "c1", name: "Maria Souza",             cpf: "032.xxx.xxx-12" },
+    { id: "c2", name: "João da Silva",           cpf: "019.xxx.xxx-88" },
+    { id: "c3", name: "Ana Paula Ferreira",      cpf: "054.xxx.xxx-34" },
+    { id: "c4", name: "Carlos Eduardo Santos",   cpf: "071.xxx.xxx-55" },
+    { id: "c5", name: "Fernanda Lima",           cpf: "098.xxx.xxx-27" },
+  ];
+
+  catList = [
+    { id: "TODOS",      label: "Todos",      icon: "blocks" },
+    { id: "ALIMENTOS",  label: "Alimentos",  icon: "utensils" },
+    { id: "BEBIDAS",    label: "Bebidas",    icon: "glass-water" },
+    { id: "SOBREMESAS", label: "Sobremesas", icon: "cake-slice" },
+    { id: "LIMPEZA",    label: "Limpeza",    icon: "spray-can" },
+    { id: "PETSHOP",    label: "PetShop",    icon: "paw-print" },
+    { id: "BAZAR",      label: "Bazar",      icon: "shopping-bag" },
+  ];
+
+  // Aligned with MANAGER_MENU_ITEMS + CONFIGURATION_MENU_ITEMS in page.tsx
+  managerItems = [
+    { id: "resumo",        label: "Resumo",         description: "Visão geral do caixa, operação e indicadores do período.",  group: "Gerencial",   icon: "layout-dashboard" },
+    { id: "faturamento",   label: "Financeiro",      description: "Faturamento diário e mensal com acompanhamento de metas.", group: "Gerencial",   icon: "chart-column" },
+    { id: "relatorios",    label: "Relatórios",      description: "Modelos e consultas operacionais do estabelecimento.",     group: "Gerencial",   icon: "clipboard-list" },
+    { id: "categorias",    label: "Categorias",      description: "Estrutura do catálogo por setores e famílias.",            group: "Operacao",    icon: "blocks" },
+    { id: "produtos",      label: "Produtos",        description: "Cadastro completo dos itens vendidos no caixa.",           group: "Operacao",    icon: "package" },
+    { id: "clientes",      label: "Clientes",        description: "Consumidores, fidelidade e dados de contato.",             group: "Operacao",    icon: "users-round" },
+    { id: "fornecedores",  label: "Fornecedores",    description: "Parceiros de compra e abastecimento da loja.",             group: "Operacao",    icon: "truck" },
+    { id: "a-receber",     label: "A Receber",        description: "Títulos, vencimentos e acompanhamento financeiro.",       group: "Financeiro",  icon: "wallet-cards" },
+    { id: "a-pagar",       label: "A Pagar",          description: "Despesas previstas e compromissos do mercado.",           group: "Financeiro",  icon: "badge-dollar-sign" },
+    { id: "estoque",       label: "Estoque",          description: "Saldo, mínimo, status e produtos com alerta.",            group: "Operacao",    icon: "warehouse" },
+    { id: "configuracoes", label: "Configurações",    description: "Balança, impressora e notas fiscais do PDV.",             group: "Operacao",    icon: "settings" },
+    // Config sub-items (shown when view === "configuracoes")
+    { id: "balanca",       label: "Balança",          description: "Cadastro e status dos equipamentos de pesagem.",          group: "Dispositivos",icon: "scale" },
+    { id: "impressora",    label: "Impressora",        description: "Impressoras de cupom e configurações da fila.",          group: "Dispositivos",icon: "printer" },
+    { id: "notas-fiscais", label: "Notas fiscais",     description: "Perfis, série e ambiente de emissão fiscal.",            group: "Fiscal",      icon: "file-text" },
+  ];
+
+  applyTheme(t) {
+    document.documentElement.dataset.theme = t;
+  }
+
+  componentDidMount() {
+    this.applyTheme(this.state.theme);
+    try {
+      const raw = localStorage.getItem("pdv_user");
+      if (raw) this.setState({ sessionUser: JSON.parse(raw) });
+    } catch(e) {}
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  componentDidUpdate() {
+    this.applyTheme(this.state.theme);
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  brl(c) {
+    return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format((c || 0) / 100);
+  }
+
+  getStatus(stock) {
+    if (stock <= 0)  return "OUT_OF_STOCK";
+    if (stock <= 5)  return "LOW_STOCK";
+    return "AVAILABLE";
+  }
+
+  badge(stock) {
+    const s = this.getStatus(stock);
+    if (s === "OUT_OF_STOCK") return { cls: "pdv-badge--danger", txt: "Esgotado" };
+    if (s === "LOW_STOCK")    return { cls: "pdv-badge--warn",   txt: "Baixo" };
+    return { cls: "pdv-badge--success", txt: "Disponível" };
+  }
+
+  getStock(id) {
+    const override = this.state.stockOverrides || {};
+    const base = this.products.find((p) => p.id === id);
+    return id in override ? override[id] : (base ? base.stock : 0);
+  }
+
+  adjustStock(id, delta) {
+    this.setState((s) => {
+      const overrides = { ...(s.stockOverrides || {}) };
+      const base = this.products.find((p) => p.id === id);
+      const current = id in overrides ? overrides[id] : (base ? base.stock : 0);
+      overrides[id] = Math.max(0, current + delta);
+      return { stockOverrides: overrides };
+    });
+  }
+
+  showToast(msg) {
+    this.setState({ toast: msg });
+    clearTimeout(this._toastTimer);
+    this._toastTimer = setTimeout(() => this.setState({ toast: "" }), 3000);
+  }
+
+  addToCart(p) {
+    const stock = this.getStock(p.id);
+    if (stock <= 0) {
+      this.showToast("⚠ Produto esgotado — " + p.name + " não pode ser adicionado ao carrinho.");
+      return;
+    }
+    this.setState((s) => {
+      const ex = s.cart.find((i) => i.id === p.id);
+      const cart = ex
+        ? s.cart.map((i) => (i.id === p.id ? { ...i, qty: i.qty + 1 } : i))
+        : [...s.cart, { id: p.id, name: p.name, priceInCents: p.priceInCents, qty: 1 }];
+      return { cart };
+    });
+  }
+
+  removeItem(id) {
+    this.setState((s) => ({ cart: s.cart.filter((i) => i.id !== id) }));
+  }
+
+  finalize() {
+    // Deduct sold quantities from stock
+    const overrides = { ...(this.state.stockOverrides || {}) };
+    for (const item of this.state.cart) {
+      const current = this.getStock(item.id);
+      overrides[item.id] = Math.max(0, current - item.qty);
+    }
+    this.setState({ cart: [], stockOverrides: overrides });
+  }
+
+  renderVals() {
+    const s = this.state;
+    const cat = this.state.cat;
+    const q = (this.state.query || "").toLowerCase();
+    const counts = { TODOS: this.products.length };
+    for (const p of this.products) counts[p.cat] = (counts[p.cat] || 0) + 1;
+
+    const visibleProducts = this.products
+      .filter((p) => (cat === "TODOS" || p.cat === cat) && (!q || p.name.toLowerCase().includes(q)))
+      .map((p) => {
+        const stock = this.getStock(p.id);
+        const b = this.badge(stock);
+        const stockFmt = p.unit === "kg"
+          ? stock.toFixed(1).replace(".", ",") + " kg"
+          : stock + " un";
+        return {
+          ...p,
+          stock,
+          stockLabel: stockFmt,
+          stockColorClass: stock <= 0 ? "pdv-stock-out" : stock <= 5 ? "pdv-stock-low" : "pdv-stock-ok",
+          price: this.brl(p.priceInCents),
+          img: "../../assets/produtos/" + p.img,
+          badgeClass: b.cls,
+          badgeText: b.txt,
+          add: () => this.addToCart(p),
+        };
+      });
+
+    const cats = [
+      ...this.catList.map((c) => ({
+        ...c,
+        countText: (counts[c.id] || 0) + " itens",
+        activeClass: c.id === cat ? "pdv-chip--active" : "",
+        select: () => this.setState({ cat: c.id }),
+      })),
+      {
+        id: "GERENCIAL",
+        label: "Gerencial",
+        icon: "layout-dashboard",
+        countText: "menu gerencial",
+        activeClass: "",
+        select: () => this.setState({ managerOpen: true, managerView: null }),
+      },
+    ];
+
+    const cartRows = this.state.cart.map((i) => ({
+      ...i,
+      total: this.brl(i.priceInCents * i.qty),
+      remove: () => this.removeItem(i.id),
+    }));
+
+    const subtotal = this.state.cart.reduce((s, i) => s + i.priceInCents * i.qty, 0);
+
+    return {
+      storeName: this.props.storeName ?? "Loja Centro",
+      productCount: this.products.length,
+      query: this.state.query,
+      onSearch: (e) => this.setState({ query: e.target.value }),
+      cats,
+      visibleProducts,
+      cartRows,
+      hasItems: this.state.cart.length > 0,
+      isEmpty: this.state.cart.length === 0,
+      itemCount: this.state.cart.reduce((s, i) => s + i.qty, 0),
+      subtotalLabel: this.brl(subtotal),
+      customerOptions: this.customers.map((c) => ({
+        ...c,
+        label: c.id === "0" ? "— Consumidor Final (sem identificação)" : c.name + (c.cpf ? "  ·  " + c.cpf : ""),
+      })),
+      onCustomerChange: (e) => this.setState({ selectedCustomer: e.target.value }),
+      selectedCustomerId: this.state.selectedCustomer || "0",
+
+      finalize: () => this.finalize(),
+      toastMsg:         this.state.toast,
+      toastHiddenClass: this.state.toast ? "" : "pdv-hidden",
+
+      // Session user — read from localStorage set by login page
+      sessionName: (s.sessionUser && s.sessionUser.name) || "Operador",
+      sessionRole: (s.sessionUser && s.sessionUser.role
+        ? { SYSTEM_ADMIN: "Admin do sistema", ADMIN: "Administrador", MANAGER: "Gerente", CASHIER: "Funcionário", STOCKIST: "Estoquista" }[s.sessionUser.role] || s.sessionUser.role
+        : "Funcionário"),
+      sessionInitials: ((s.sessionUser && s.sessionUser.name) || "OP")
+        .split(" ").slice(0,2).map((w) => w[0]).join("").toUpperCase(),
+
+      opMenuHiddenClass: this.state.opMenuOpen ? "" : "pdv-hidden",
+      toggleOpMenu: () => this.setState((s) => ({ opMenuOpen: !s.opMenuOpen })),
+      closeOpMenu:  () => this.setState({ opMenuOpen: false }),
+      goToAdmin:    () => { window.location.href = "../admin-multitenant/AdminMultitenant.dc.html"; },
+      goToPerfil:   () => { this.setState({ opMenuOpen: false }); window.location.href = "../perfil/Perfil.dc.html"; },
+      doLogout:     () => { localStorage.removeItem("pdv_user"); window.location.href = "../login/Login.dc.html"; },
+
+      themeIcon: this.state.theme === "dark" ? "☀" : "☽",
+      themeLabel: this.state.theme === "dark" ? "Mudar para tema claro" : "Mudar para tema escuro",
+      toggleTheme: () => this.setState((s) => ({ theme: s.theme === "dark" ? "light" : "dark" })),
+
+      // Manager menu
+      isManagerOpen: this.state.managerOpen,
+      isManagerMenu: !this.state.managerView,
+      isManagerView: !!this.state.managerView,
+      showBackBtn: !!this.state.managerView,
+      openManager: () => this.setState({ managerOpen: true, managerView: null }),
+      closeManager: () => this.setState({ managerOpen: false, managerView: null }),
+      goBack: () => {
+        const v = this.state.managerView;
+        const configSubs = ["balanca", "impressora", "notas-fiscais"];
+        if (configSubs.includes(v)) {
+          this.setState({ managerView: "configuracoes" });
+        } else {
+          this.setState({ managerView: null });
+        }
+      },
+
+      managerTitle: (function() {
+        const v = this.state.managerView;
+        if (!v) return "Menu gerencial";
+        if (v === "configuracoes") return "Configurações";
+        const item = this.managerItems.find((i) => i.id === v);
+        return item ? item.label : "Gerencial";
+      }).call(this),
+
+      managerSubtitle: (function() {
+        const v = this.state.managerView;
+        if (!v) return "Acesse módulos, relatórios e configurações do PDV.";
+        const item = this.managerItems.find((i) => i.id === v);
+        return item ? item.description : "";
+      }).call(this),
+
+      activeViewIcon: (function() {
+        const item = this.managerItems.find((i) => i.id === this.state.managerView);
+        return item ? item.icon : "sparkles";
+      }).call(this),
+
+      managerViewDesc: (function() {
+        const item = this.managerItems.find((i) => i.id === this.state.managerView);
+        return item
+          ? `Módulo "${item.label}" — implemente aqui o conteúdo do painel. Consulte o repositório licodevone/backup-pdv-face-to_face-multitenant para o código original.`
+          : "";
+      }).call(this),
+
+      stockProducts: this.products.map((p) => {
+        const stock = this.getStock(p.id);
+        return {
+          ...p,
+          stockLabel: p.unit === "kg" ? stock.toFixed(1).replace(".", ",") + " kg" : stock + " un",
+          stockColorClass: stock <= 0 ? "pdv-stock-out" : stock <= 5 ? "pdv-stock-low" : "pdv-stock-good",
+          stockBarW: Math.min(100, Math.round((stock / 50) * 100)) + "%",
+          inc: () => this.adjustStock(p.id, 1),
+          dec: () => this.adjustStock(p.id, -1),
+          addTen: () => this.adjustStock(p.id, 10),
+        };
+      }),
+      isStockView:   this.state.managerView === "estoque",
+      isConfigView:  this.state.managerView === "configuracoes",
+      // configuracoes shows sub-menu (managerGroups), not the generic placeholder
+      isGenericView: !!this.state.managerView && this.state.managerView !== "estoque" && this.state.managerView !== "configuracoes",
+      stockViewHiddenClass:   this.state.managerView === "estoque" ? "" : "pdv-hidden",
+      genericViewHiddenClass: (!!this.state.managerView && this.state.managerView !== "estoque" && this.state.managerView !== "configuracoes") ? "" : "pdv-hidden",
+
+      managerHiddenClass: this.state.managerOpen ? "" : "pdv-hidden",
+      // Show menu grid for: null (main menu) OR "configuracoes" (shows config sub-items via managerGroups)
+      menuHiddenClass:    (!this.state.managerView || this.state.managerView === "configuracoes") ? "" : "pdv-hidden",
+      viewHiddenClass:    (this.state.managerView && this.state.managerView !== "configuracoes") ? "" : "pdv-hidden",
+      backHiddenClass:    this.state.managerView  ? "" : "pdv-hidden",
+
+      managerGroups: (function() {
+        const v = this.state.managerView;
+        // When inside "configuracoes", show Dispositivos + Fiscal sub-items only
+        const groupOrder = v === "configuracoes"
+          ? ["Dispositivos", "Fiscal"]
+          : ["Gerencial", "Financeiro", "Operacao"];
+        return groupOrder.map((g) => ({
+          label: g === "Operacao" ? "Operação" : g,
+          items: this.managerItems
+            .filter((i) => i.group === g)
+            .map((item) => ({
+              ...item,
+              open: () => this.setState({ managerView: item.id }),
+            })),
+        })).filter((g) => g.items.length > 0);
+      }).call(this),
+    };
+  }
+}
+</script>
+</body>
+</html>

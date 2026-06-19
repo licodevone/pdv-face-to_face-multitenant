@@ -1,0 +1,1 @@
+Comandos principais: `pnpm dev` (backend+frontend), `pnpm dev:backend`, `pnpm dev:frontend`, `pnpm dev:desktop`, `pnpm typecheck`, `pnpm eslint`, `pnpm db:migrate`, `pnpm db:generate`, `pnpm studio`, `pnpm create-admin`.

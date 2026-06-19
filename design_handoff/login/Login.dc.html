@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Login" description="Tela de login com seleção de perfil — Admin do sistema, Admin da loja, Operador de caixa, Estoquista" -->
+<helmet>
+  <script src="./ds-base.js"></script>
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <style>
+    @media (max-width: 860px) {
+      .login-grid { grid-template-columns: 1fr !important; }
+      .login-presentation { display: none !important; }
+    }
+    @media (max-width: 500px) {
+      .login-root { padding: 0.75rem !important; }
+      .login-roles { grid-template-columns: repeat(2,1fr) !important; }
+    }
+  </style>
+</helmet>
+
+<div class="login-root" style="min-height:100vh; display:grid; padding:clamp(0.75rem,2vw,1.5rem); background:radial-gradient(circle at 12% 8%,rgba(96,165,250,0.2),transparent 28rem),radial-gradient(circle at 88% 18%,rgba(79,70,229,0.18),transparent 30rem),linear-gradient(135deg,var(--background) 0%,var(--background-soft) 100%); font-family:var(--font-sans); color:var(--text); align-items:stretch;">
+
+  <div class="login-grid" style="display:grid; gap:clamp(0.75rem,1.5vw,1.25rem); grid-template-columns:minmax(0,1.2fr) minmax(320px,0.8fr); align-items:stretch;">
+
+    <!-- Presentation -->
+    <div class="login-presentation" style="background:color-mix(in srgb,var(--surface) 86%,transparent); border:1px solid var(--line); border-radius:1.6rem; box-shadow:var(--shadow); overflow:hidden; position:relative; display:grid; gap:clamp(1rem,2vw,1.4rem); padding:clamp(1.5rem,4vw,3rem); align-content:start;">
+      <div style="position:absolute; inset:0; background:radial-gradient(circle,color-mix(in srgb,var(--accent) 22%,transparent) 0 2px,transparent 2px),linear-gradient(135deg,color-mix(in srgb,var(--accent) 14%,transparent),transparent 45%); background-size:28px 28px,auto; pointer-events:none;"></div>
+      <div style="position:relative; z-index:1; display:flex; align-items:center; gap:0.85rem;">
+        <img src="../../assets/brand-logo.svg" alt="logo" style="height:clamp(64px,8vw,100px);width:clamp(64px,8vw,100px);filter:drop-shadow(0 18px 34px color-mix(in srgb,var(--accent) 28%,transparent));">
+        <h1 style="margin:0; font-size:clamp(2.4rem,5.8vw,5.2rem); letter-spacing:-0.06em; line-height:0.9; color:var(--text);">Face Delivery</h1>
+      </div>
+      <p style="position:relative; z-index:1; color:var(--muted); font-size:clamp(1rem,1.6vw,1.18rem); line-height:1.75; margin:0; max-width:720px;">Sistema PDV multiplataforma com frente de caixa, estoque, delivery e relatórios — pronto para operar com múltiplos tenants.</p>
+
+      <div style="position:relative; z-index:1; display:flex; flex-wrap:wrap; gap:0.55rem;">
+        <span style="display:inline-flex; align-items:center; gap:0.45rem; background:color-mix(in srgb,var(--accent) 12%,var(--surface)); border:1px solid color-mix(in srgb,var(--accent) 22%,transparent); border-radius:999px; color:var(--text); font-size:0.82rem; font-weight:800; padding:0.55rem 0.7rem;"><i data-lucide="shopping-cart" style="width:14px;height:14px;"></i> Frente de caixa</span>
+        <span style="display:inline-flex; align-items:center; gap:0.45rem; background:color-mix(in srgb,var(--accent) 12%,var(--surface)); border:1px solid color-mix(in srgb,var(--accent) 22%,transparent); border-radius:999px; color:var(--text); font-size:0.82rem; font-weight:800; padding:0.55rem 0.7rem;"><i data-lucide="warehouse" style="width:14px;height:14px;"></i> Controle de estoque</span>
+        <span style="display:inline-flex; align-items:center; gap:0.45rem; background:color-mix(in srgb,var(--accent) 12%,var(--surface)); border:1px solid color-mix(in srgb,var(--accent) 22%,transparent); border-radius:999px; color:var(--text); font-size:0.82rem; font-weight:800; padding:0.55rem 0.7rem;"><i data-lucide="truck" style="width:14px;height:14px;"></i> Delivery rastreável</span>
+        <span style="display:inline-flex; align-items:center; gap:0.45rem; background:color-mix(in srgb,var(--accent) 12%,var(--surface)); border:1px solid color-mix(in srgb,var(--accent) 22%,transparent); border-radius:999px; color:var(--text); font-size:0.82rem; font-weight:800; padding:0.55rem 0.7rem;"><i data-lucide="file-text" style="width:14px;height:14px;"></i> NFC-e fiscal</span>
+        <span style="display:inline-flex; align-items:center; gap:0.45rem; background:color-mix(in srgb,var(--accent) 12%,var(--surface)); border:1px solid color-mix(in srgb,var(--accent) 22%,transparent); border-radius:999px; color:var(--text); font-size:0.82rem; font-weight:800; padding:0.55rem 0.7rem;"><i data-lucide="users-round" style="width:14px;height:14px;"></i> Multitenant</span>
+      </div>
+
+
+    </div>
+
+    <!-- Login panel -->
+    <div style="background:color-mix(in srgb,var(--surface) 86%,transparent); border:1px solid var(--line); border-radius:1.6rem; box-shadow:var(--shadow); padding:clamp(1rem,2.6vw,2rem); display:grid; align-content:center; gap:1.1rem;">
+
+      <div>
+        <p style="margin:0 0 4px; color:var(--accent-soft); font-size:0.72rem; font-weight:900; letter-spacing:0.16em; text-transform:uppercase;">Bem-vindo</p>
+        <h2 style="margin:0; font-size:clamp(2rem,4vw,3.4rem); letter-spacing:-0.06em; line-height:0.95; color:var(--text);">Acessar o PDV</h2>
+        <p style="margin:4px 0 0; color:var(--muted); font-size:0.88rem; line-height:1.6;">Selecione seu perfil e informe suas credenciais.</p>
+      </div>
+
+      <!-- Form -->
+      <div style="background:color-mix(in srgb,var(--surface-soft) 92%,transparent); border:1px solid var(--line); border-radius:1.25rem; padding:0.85rem; display:grid; gap:0.6rem;">
+        <label style="display:grid; gap:0.4rem;">
+          <span style="color:var(--muted); font-size:0.82rem; font-weight:600;">E-mail</span>
+          <input class="pdv-input" type="email" value="{{ email }}" onInput="{{ setEmail }}" placeholder="Informe seu e-mail" autocomplete="username">
+        </label>
+        <label style="display:grid; gap:0.4rem;">
+          <span style="color:var(--muted); font-size:0.82rem; font-weight:600;">Senha</span>
+          <input class="pdv-input" type="password" value="{{ password }}" onInput="{{ setPassword }}" placeholder="Informe sua senha" autocomplete="current-password">
+        </label>
+
+        <sc-if value="{{ hasError }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; align-items:center; gap:0.4rem; background:color-mix(in srgb,var(--danger) 12%,transparent); border:1px solid color-mix(in srgb,var(--danger) 24%,transparent); border-radius:var(--radius-md); color:var(--danger); font-size:0.78rem; font-weight:700; padding:0.5rem 0.6rem;">
+            <i data-lucide="alert-circle" style="width:14px;height:14px;flex-shrink:0;"></i>{{ errorMsg }}
+          </div>
+        </sc-if>
+
+        <button onClick="{{ doLogin }}" class="pdv-btn pdv-btn--primary pdv-btn--block" style="margin-top:0.15rem; font-size:0.95rem; display:inline-flex; align-items:center; justify-content:center; gap:0.45rem; padding:0.8rem;">
+          <i data-lucide="log-in" style="width:16px;height:16px;"></i> {{ loginLabel }}
+        </button>
+      </div>
+
+      <p style="margin:0; color:var(--muted); font-size:0.68rem; text-align:center; line-height:1.5;">Suporte técnico: <strong style="color:var(--accent-soft);">+55 (12) 98860-1020</strong></p>
+    </div>
+
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:860}}">
+class Component extends DCLogic {
+  state = {
+    selectedRole: "caixa",
+    email: "",
+    password: "",
+    errorMsg: "",
+  };
+
+  componentDidMount()  { if (window.lucide) window.lucide.createIcons(); }
+  componentDidUpdate() { if (window.lucide) window.lucide.createIcons(); }
+
+  // Roles aligned with production: operator-roles.ts (ADMIN, MANAGER, CASHIER, STOCKIST)
+  users = [
+    { role: "SYSTEM_ADMIN", name: "Admin do sistema",  icon: "shield",           email: "admin@pdv.local",       password: "Admin@2024",     dest: "../admin-multitenant/AdminMultitenant.dc.html" },
+    { role: "ADMIN",        name: "Administrador",      icon: "building-2",       email: "admin@loja.com.br",     password: "Admin@2024",     dest: "../frente-de-caixa/FrenteDeCaixa.dc.html" },
+    { role: "MANAGER",      name: "Gerente",             icon: "layout-dashboard", email: "gerente@loja.com.br",  password: "Gerente@2024",   dest: "../frente-de-caixa/FrenteDeCaixa.dc.html" },
+    { role: "CASHIER",      name: "Funcionário",         icon: "monitor",          email: "caixa@loja.com.br",    password: "Caixa@2024",     dest: "../frente-de-caixa/FrenteDeCaixa.dc.html" },
+    { role: "STOCKIST",     name: "Estoquista",          icon: "warehouse",        email: "estoque@loja.com.br",  password: "Estoque@2024",   dest: "../frente-de-caixa/FrenteDeCaixa.dc.html" },
+  ];
+
+  getRole() {
+    return this.users.find((u) => u.role === this.state.selectedRole) || this.users[3];
+  }
+
+  renderVals() {
+    const s = this.state;
+    return {
+      email: s.email,
+      password: s.password,
+      credentialsList: this.users,
+      loginLabel: "Entrar no PDV",
+      hasError: !!s.errorMsg,
+      errorMsg: s.errorMsg,
+
+      setEmail:    (e) => this.setState({ email: e.target.value, errorMsg: "" }),
+      setPassword: (e) => this.setState({ password: e.target.value, errorMsg: "" }),
+
+      doLogin: () => {
+        const em  = s.email.trim().toLowerCase();
+        const pwd = s.password;
+        if (!em || !pwd) {
+          this.setState({ errorMsg: "Informe o e-mail e a senha para continuar." });
+          return;
+        }
+        const user = this.users.find((u) => u.email === em && u.password === pwd);
+        if (!user) {
+          this.setState({ errorMsg: "E-mail ou senha incorretos. Verifique suas credenciais." });
+          return;
+        }
+        localStorage.setItem("pdv_user", JSON.stringify({ role: user.role, name: user.name, email: em }));
+        window.location.href = "../frente-de-caixa/FrenteDeCaixa.dc.html";
+      },
+    };
+  }
+}
+</script>
+</body>
+</html>

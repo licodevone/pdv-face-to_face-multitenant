@@ -1,0 +1,11 @@
+node_modules/
+dist/
+out/
+coverage/
+.env
+.env.*
+src/generated/
+frontend/.next/
+desktop/dist/
+*.log
+*.tsbuildinfo

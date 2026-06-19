@@ -1,0 +1,1 @@
+PDV Face Delivery é um sistema multitenant com backend Fastify + Prisma/PostgreSQL + Better Auth, frontend Next.js em frontend/, e desktop Electron em desktop/. API backend principal em src/server.ts e front principal em frontend/src/app/page.tsx.

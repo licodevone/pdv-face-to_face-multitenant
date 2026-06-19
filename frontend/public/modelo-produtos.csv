@@ -1,0 +1,7 @@
+sku,codigo_barras,nome,descricao,unidade,preco_venda,custo,estoque_atual,estoque_minimo,ncm_fiscal,cfop_fiscal,categoria_nivel1,categoria_nivel2,categoria_nivel3,categoria_nivel4,categoria_nivel5
+REF-0001,7891000100101,Refrigerante Cola 2L,Refrigerante sabor cola,UNIT,9.99,6.40,48,6,22021000,5102,Alimentos,Bebidas,Refrigerantes,,
+SUC-0001,7891000100102,Suco de Laranja 1L,Suco integral de laranja,UNIT,12.5,8.1,24,4,20098990,5102,Alimentos,Bebidas,Sucos,,
+MAS-0001,7891000100103,Macarrao Espaguete 500g,Massa seca tipo espaguete,UNIT,5.49,3.2,60,10,19021900,5102,Alimentos,Mercearia,Massas,,
+DET-0001,7891000100104,Detergente Neutro 500ml,Detergente liquido neutro,UNIT,2.99,1.75,80,12,34025000,5102,Limpeza,Domestica,Detergentes,,
+RAC-0001,7891000100105,Racao Caes Adultos 15kg,Racao premium para caes adultos,UNIT,129.9,96.5,12,2,23091000,5102,PetShop,Racoes,Caes,,
+

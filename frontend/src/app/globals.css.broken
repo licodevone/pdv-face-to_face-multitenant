@@ -1,0 +1,425 @@
+/* Design System Custom Colors */
+:root {
+  /* Primary background and text colors */
+  --background: #140803;
+  --background-strong: #060201;
+  --background-soft: #2a1409;
+  --surface: #1a0d07;
+  --surface-soft: #26140c;
+  --surface-muted: #321a0d;
+  --text: #fff3eb;
+  --muted: #ffbb8d;
+
+  /* Semantic colors */
+  --accent: #ff6a00;
+  --accent-strong: #ff4700;
+  --accent-soft: #ff9b45;
+  --success: #2de7a5;
+  --warning: #ffcb6d;
+  --danger: #ff6171;
+
+  /* Button specific */
+  --button-bg: #ff6a00;
+  --button-bg-strong: #ff4700;
+  --button-hover: #ff9b45;
+  --button-hover-strong: #ff7f24;
+  --button-border: rgba(255, 195, 156, 0.38);
+  --button-shadow: 0 0 0.55rem rgba(255, 106, 0, 0.52), 0 0 1.8rem rgba(255, 106, 0, 0.32);
+
+  /* Panel specific */
+  --line: rgba(255, 164, 112, 0.18);
+  --panel-gradient: linear-gradient(180deg, rgba(255, 106, 0, 0.98) 0%, rgba(255, 145, 72, 0.92) 100%);
+  --shadow: 0 24px 60px rgba(0, 0, 0, 0.42);
+
+  /* Checkout panel colors */
+  --checkout-panel-bg: #050505;
+  --checkout-panel-surface: #101010;
+  --checkout-panel-surface-soft: #151515;
+  --checkout-panel-surface-muted: #1d1d1d;
+  --checkout-panel-line: rgba(255, 255, 255, 0.08);
+  --checkout-panel-text: #ffffff;
+  --checkout-panel-muted: #bdbdbd;
+
+  /* Cart panel colors */
+  --cart-panel-bg: #000000;
+  --cart-panel-line: rgba(255, 255, 255, 0.08);
+  --cart-panel-text: #ffffff;
+  --cart-panel-muted: #bdbdbd;
+  --cart-row-zebra-odd: rgba(255, 255, 255, 0.04);
+  --cart-row-zebra-even: rgba(255, 255, 255, 0.08);
+
+  /* shadcn CSS variables (dark mode) */
+  --radius: 0.5rem;
+  --background-rgb: 20 8 3;
+  --foreground-rgb: 255 243 235;
+  --card-rgb: 26 13 7;
+  --card-foreground-rgb: 255 243 235;
+  --popover-rgb: 26 13 7;
+  --popover-foreground-rgb: 255 243 235;
+  --muted-rgb: 100 60 30;
+  --muted-foreground-rgb: 255 187 141;
+  --accent-rgb: 255 106 0;
+  --accent-foreground-rgb: 27 8 0;
+  --destructive-rgb: 255 97 113;
+  --destructive-foreground-rgb: 255 243 235;
+  --border-rgb: 80 40 20;
+  --input-rgb: 26 13 7;
+  --ring-rgb: 255 106 0;
+  --chart-1-rgb: 255 106 0;
+  --chart-2-rgb: 45 231 165;
+  --chart-3-rgb: 255 203 109;
+  --chart-4-rgb: 255 97 113;
+  --chart-5-rgb: 255 155 69;
+}
+
+html[data-theme="light"] {
+  /* Light mode colors */
+  --background: #fff7f0;
+  --background-strong: #ffe7d2;
+  --background-soft: #fff1e4;
+  --surface: #fffdfa;
+  --surface-soft: #fff3e8;
+  --surface-muted: #ffe3cc;
+  --text: #2b1206;
+  --muted: #7a4929;
+
+  /* Semantic colors */
+  --accent: #ff6a00;
+  --accent-strong: #ff4d00;
+  --accent-soft: #ffb16f;
+  --success: #0a9a67;
+  --warning: #c9870a;
+  --danger: #cf485a;
+
+  /* Button specific */
+  --button-bg: #ff6a00;
+  --button-bg-strong: #ff4d00;
+  --button-hover: #ffb16f;
+  --button-hover-strong: #ff944b;
+  --button-border: rgba(255, 122, 36, 0.28);
+  --button-shadow: 0 0 0.35rem rgba(255, 106, 0, 0.26), 0 0 1.2rem rgba(255, 106, 0, 0.14);
+
+  /* Panel specific */
+  --line: rgba(255, 122, 36, 0.16);
+  --panel-gradient: linear-gradient(180deg, rgba(255, 122, 36, 0.95) 0%, rgba(255, 175, 111, 0.88) 100%);
+  --shadow: 0 24px 60px rgba(255, 106, 0, 0.14);
+
+  /* Checkout panel colors */
+  --checkout-panel-bg: #ffffff;
+  --checkout-panel-surface: #ffffff;
+  --checkout-panel-surface-soft: #f7f9fc;
+  --checkout-panel-surface-muted: #edf1f6;
+  --checkout-panel-line: #d8e0ea;
+  --checkout-panel-text: #12263f;
+  --checkout-panel-muted: #5f7390;
+
+  /* Cart panel colors */
+  --cart-panel-bg: #ffffff;
+  --cart-panel-line: #d8e0ea;
+  --cart-panel-text: #12263f;
+  --cart-panel-muted: #5f7390;
+  --cart-row-zebra-odd: rgba(18, 38, 63, 0.04);
+  --cart-row-zebra-even: rgba(18, 38, 63, 0.08);
+
+  /* shadcn CSS variables (light mode) */
+  --radius: 0.5rem;
+  --background-rgb: 255 247 240;
+  --foreground-rgb: 43 18 6;
+  --card-rgb: 255 253 250;
+  --card-foreground-rgb: 43 18 6;
+  --popover-rgb: 255 253 250;
+  --popover-foreground-rgb: 43 18 6;
+  --muted-rgb: 220 150 120;
+  --muted-foreground-rgb: 122 73 41;
+  --accent-rgb: 255 106 0;
+  --accent-foreground-rgb: 255 247 240;
+  --destructive-rgb: 207 72 90;
+  --destructive-foreground-rgb: 255 247 240;
+  --border-rgb: 230 180 150;
+  --input-rgb: 255 253 250;
+  --ring-rgb: 255 106 0;
+  --chart-1-rgb: 255 106 0;
+  --chart-2-rgb: 10 154 103;
+  --chart-3-rgb: 201 135 10;
+  --chart-4-rgb: 207 72 90;
+  --chart-5-rgb: 255 161 111;
+}
+
+/* Base styles */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: radial-gradient(circle at top right, rgba(255, 122, 36, 0.22), transparent 28rem),
+    linear-gradient(180deg, var(--background) 0%, var(--background-strong) 100%);
+  color: var(--text);
+  font-family: Arial, Helvetica, sans-serif;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+/* App shell layout */
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.app-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 2rem;
+  background: var(--background-strong);
+  border-top: 1px solid var(--line);
+  flex-wrap: wrap;
+  font-size: 0.875rem;
+}
+
+.app-footer-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.app-footer-copy strong {
+  color: var(--accent);
+  font-weight: bold;
+}
+
+.app-footer-copy span {
+  color: var(--muted);
+}
+
+.app-footer-link {
+  color: var(--accent);
+  text-decoration: none;
+  transition: color 0.2s ease;
+  white-space: nowrap;
+}
+
+.app-footer-link:hover {
+  color: var(--accent-soft);
+  text-decoration: underline;
+}
+
+/* Login shell */
+.login-shell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+.presentation-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  padding: 2rem;
+  max-width: 32rem;
+  width: 100%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.brand-block {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.brand-logo {
+  width: 3rem;
+  height: 3rem;
+  object-fit: contain;
+}
+
+.brand-block > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.eyebrow {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0;
+  letter-spacing: 0.05em;
+}
+
+.brand-block h1 {
+  font-size: 1.75rem;
+  margin: 0.5rem 0 0 0;
+  color: var(--text);
+}
+
+.presentation-copy {
+  color: var(--muted);
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+/* Form styles */
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 0.5rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 0.75rem;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 0.375rem;
+  font-family: inherit;
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(255, 106, 0, 0.1);
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: var(--muted);
+}
+
+/* Button styles */
+button {
+  padding: 0.75rem 1.5rem;
+  background: var(--button-bg);
+  color: var(--text);
+  border: 1px solid var(--button-border);
+  border-radius: 0.375rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  background: var(--button-hover);
+  box-shadow: var(--button-shadow);
+}
+
+button:active {
+  background: var(--button-bg-strong);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .presentation-card {
+    padding: 1.5rem;
+  }
+
+  .brand-block {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .app-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+}
+
+/* Print styles */
+@media print {
+  .app-footer {
+    display: none;
+  }
+}
+
+/* Tailwind CSS directives */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Tailwind color utility classes using CSS variables */
+@layer components {
+  /* Background colors */
+  .bg-background {
+    @apply !bg-[var(--background)];
+  }
+  
+  .bg-foreground {
+    @apply !bg-[var(--foreground)];
+  }
+  
+  .bg-surface {
+    @apply !bg-[var(--surface)];
+  }
+  
+  .bg-surface-soft {
+    @apply !bg-[var(--surface-soft)];
+  }
+  
+  .bg-background-strong {
+    @apply !bg-[var(--background-strong)];
+  }
+  
+  .bg-accent {
+    @apply !bg-[var(--accent)];
+  }
+  
+  .bg-accent-soft {
+    @apply !bg-[var(--accent-soft)];
+  }
+  
+  /* Text colors */
+  .text-foreground {
+    @apply !text-[var(--text)];
+  }
+  
+  .text-muted {
+    @apply !text-[var(--muted)];
+  }
+  
+  .text-accent {
+    @apply !text-[var(--accent)];
+  }
+  
+  .text-accent-soft {
+    @apply !text-[var(--accent-soft)];
+  }
+  
+  /* Border colors */
+  .border-border {
+    @apply !border-[var(--line)];
+  }

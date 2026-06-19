@@ -1,0 +1,83 @@
+# Lista de produtos
+
+ - Arroz branco tipo 1 pacote 5kg
+ -  Feijão carioca pacote 1kg
+ -  Café torrado e moído 500g
+ -  Leite UHT integral caixa 1L
+ -  Produto pesado em balança
+ -  Detergente líquido neutro 500ml
+ -  Açúcar refinado especial pacote 1kg
+ -  Sal refinado iodado pacote 1kg
+ -  Óleo de soja refinado garrafa 900ml
+ -  Macarrão espaguete com ovos 500g
+ -  Molho de tomate tradicional sachê 340g
+ -  Biscoito recheado sabor chocolate 130g
+ -  Refrigerante sabor cola garrafa 2L
+ -  Água mineral natural sem gás 1,5L
+ -  Suco de uva integral sem adição de açúcar 1L
+ -  Manteiga extra com sal pote 200g
+ -  Ovos de galinha brancos cartela com 12 unidades
+ -  Tomate maduro vendido por quilo na balança
+ -  Maçã gala vendida por quilo na balança
+ -  Batata inglesa lavada vendida por quilo na balança
+ -  Pão francês fresco vendido por quilo
+ -  Sabão em pó para roupas caixa 1kg
+ -  Papel higiênico folha dupla pacote 12 rolos
+ -  Sabonete em barra hidratante 90g
+ -  Farinha de trigo especial para bolos, paes e massas.
+ -  Fuba mimoso para bolos e receitas tradicionais.
+ -  Milho verde em conserva lata 170g.
+ -  Ervilha em conserva lata 200g.
+ -  Atum ralado em oleo, lata 170g.
+ -  Sardinha em molho de tomate, lata 125g.
+ -  Maionese tradicional pote 500g.
+ -  Ketchup tradicional frasco 400g.
+ -  Mostarda tradicional frasco 200g.
+ -  Achocolatado em po instantaneo 400g.
+ -  Chocolate ao leite barra 90g.
+ -  Iogurte sabor morango pote 170g.
+ -  Queijo mussarela fatiado, bandeja 200g.
+ -  Presunto cozido fatiado, bandeja 200g.
+ -  Frango inteiro resfriado, venda por peso.
+ -  Carne moida bovina fresca, venda por peso.
+ -  Desinfetante perfumado lavanda frasco 2 litros.
+ -  Agua sanitaria multiuso frasco 1 litro.
+ -  Amaciante concentrado para roupas frasco 2 litros.
+ -  Sabao em barra glicerinado com 5 unidades.
+ -  Esponja multiuso com manta abrasiva, pacote com 3.
+ -  Papel toalha folha dupla com 2 rolos.
+ -  Shampoo hidratante uso diario frasco 350ml.
+ -  Condicionador hidratante uso diario frasco 350ml.
+ -  Absorvente noturno com abas pacote 8 unidades.
+ -  Fralda descartavel infantil tamanho M pacote com 30.
+ -  Cerveja pilsen tradicional lata 350ml.
+ -  Cerveja premium long neck 330ml.
+ -  Bebida energetica gaseificada lata 269ml.
+ -  Biscoito agua e sal crocante pacote 200g.
+ -  Suco integral de laranja sem adicao de acucar.
+ -  Requeijao cremoso tradicional copo 200g.
+ -  Item para demonstrar sinalização sem estoque
+ -  Arroz branco tipo 1 Camil, pacote economico 5kg.
+ -  Feijao carioca selecionado, graos inteiros, pacote 1kg.
+ -  Cafe torrado e moido tradicional, pacote almofada 500g.
+ -  Leite integral longa vida UHT, caixa 1 litro.
+ -  Banana prata selecionada, venda por peso no caixa.
+ -  Detergente liquido neutro para loucas, frasco 500ml.
+ -  Acucar refinado especial para uso diario, pacote 1kg.
+ -  Sal refinado iodado para preparo de alimentos, pacote 1kg.
+ -  Oleo de soja refinado, garrafa 900ml.
+ -  Massa de semola tipo espaguete, pacote 500g.
+ -  Molho pronto tradicional, sache 340g.
+ -  Biscoito recheado sabor chocolate, pacote 130g.
+ -  Refrigerante sabor cola, garrafa pet 2 litros.
+ -  Agua mineral natural sem gas, garrafa 1,5 litro.
+ -  Manteiga com sal em pote, ideal para paes e receitas.
+ -  Cartela com 12 ovos brancos selecionados.
+ -  Tomate fresco para salada e preparo diario, venda por kg.
+ -  Maca gala selecionada, venda por peso no caixa.
+ -  Batata inglesa lavada para cozinhar e fritar, venda por kg.
+ -  Pao frances produzido no dia, venda por peso.
+ -  Sabao em po para roupas, caixa 1kg.
+ -  Papel higienico folha dupla, pacote economico com 12 rolos.
+ -  Sabonete em barra para cuidado diario da pele, 90g.
+ -  Produto para demonstracao de item sem estoque no PDV.

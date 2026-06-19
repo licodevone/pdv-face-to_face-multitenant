@@ -1,0 +1,1 @@
+Projeto em TypeScript ESM, foco em tipos explícitos e validação com Zod. Nomeação em inglês para código e mensagens UI em português. Frontend usa React/Next com hooks, backend usa casos de uso em src/use-cases e rotas em src/routes.
