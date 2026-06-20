@@ -49,7 +49,9 @@
     "test:math": "vitest run tests/unit/math.test.ts",
     "start": "electron-forge start",
     "package": "electron-forge package -c forge.config.cjs",
-    "make": "electron-forge make -c forge.config.cjs"
+    "make": "electron-forge make -c forge.config.cjs",
+    "make:linux": "electron-forge make --platform=linux --arch=x64 -c forge.config.cjs",
+    "make:win": "electron-forge make --platform=win32 --arch=x64 -c forge.config.cjs"
   },
   "dependencies": {
     "@fastify/cors": "11.2.0",
