@@ -341,9 +341,6 @@ export default function PdvDemoPage() {
             <h1>Face Delivery</h1>
           </div>
         </div>
-        <div className="topbar-actions">
-          <span className="status-pill success">Caixa aberto</span>
-        </div>
       </header>
 
       <section className="pdv-layout">

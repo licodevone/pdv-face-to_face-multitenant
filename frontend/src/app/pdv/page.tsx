@@ -17,6 +17,7 @@ import {
   MonitorCog,
   MoonStar,
   Package,
+  Palette,
   PawPrint,
   Printer,
   Scale,
@@ -247,6 +248,7 @@ interface CollapsibleDashboardSectionProps {
 }
 
 type ThemeMode = "dark" | "light";
+type AccentColor = "blue" | "green" | "violet" | "amber" | "slate" | "pink" | "orange" | "rose" | "indigo" | "teal";
 
 interface DashboardVisibilitySettings {
   hideSummaryRowGrid: boolean;
@@ -267,7 +269,21 @@ const moneyFormatter = new Intl.NumberFormat("pt-BR", {
 });
 
 const THEME_STORAGE_KEY = "pdv-face-to-face-theme";
+const ACCENT_STORAGE_KEY = "pdv-face-to-face-accent";
 const DASHBOARD_VISIBILITY_STORAGE_KEY = "pdv-face-to-face-dashboard-visibility";
+
+const ACCENT_COLORS: { id: AccentColor; hex: string; label: string }[] = [
+  { id: "slate",  hex: "#64748b", label: "Cinza"       },
+  { id: "blue",   hex: "#3b82f6", label: "Azul"        },
+  { id: "green",  hex: "#22c55e", label: "Verde"       },
+  { id: "violet", hex: "#8b5cf6", label: "Violeta"     },
+  { id: "amber",  hex: "#f59e0b", label: "Âmbar"       },
+  { id: "pink",   hex: "#ec4899", label: "Rosa"        },
+  { id: "orange", hex: "#f97316", label: "Laranja"     },
+  { id: "rose",   hex: "#f43f5e", label: "Vermelho"    },
+  { id: "indigo", hex: "#6366f1", label: "Índigo"      },
+  { id: "teal",   hex: "#14b8a6", label: "Verde-água"  },
+];
 const BOOTSTRAP_SESSION_TIMEOUT_MS = 8_000;
 const CART_STOCK_BLOCKED_MESSAGE = "Modifique a quantidade no carrinho";
 const EMPTY_CART_IMAGE_URL = "/img/empty-cart-image.png";
@@ -1039,6 +1055,13 @@ const getInitialTheme = (): ThemeMode => {
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 };
 
+const getInitialAccent = (): AccentColor => {
+  if (typeof window === "undefined") return "blue";
+  const stored = window.localStorage.getItem(ACCENT_STORAGE_KEY) as AccentColor | null;
+  if (stored && ACCENT_COLORS.some((c) => c.id === stored)) return stored;
+  return "blue";
+};
+
 const getInitialDashboardVisibility = (): DashboardVisibilitySettings => {
   if (typeof window === "undefined") {
     return DEFAULT_DASHBOARD_VISIBILITY;
@@ -1274,9 +1297,58 @@ function CollapsibleDashboardSection({
   );
 }
 
+function ColorPicker({
+  accent,
+  onChange,
+}: {
+  accent: AccentColor;
+  onChange: (color: AccentColor) => void;
+}) {
+  const ref = useRef<HTMLDetailsElement>(null);
+
+  useEffect(() => {
+    function handleOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        ref.current.open = false;
+      }
+    }
+    document.addEventListener("mousedown", handleOutside);
+    return () => document.removeEventListener("mousedown", handleOutside);
+  }, []);
+
+  return (
+    <details className="color-picker-menu" ref={ref}>
+      <summary className="theme-toggle" aria-label="Cor do sistema" title="Cor do sistema">
+        <span className="theme-toggle-icon" aria-hidden="true">
+          <Palette size={18} />
+        </span>
+      </summary>
+      <div className="color-picker-dropdown">
+        <p className="color-picker-label">Cor do sistema</p>
+        <div className="color-picker-grid">
+          {ACCENT_COLORS.map((c) => (
+            <button
+              key={c.id}
+              className={`color-swatch${accent === c.id ? " active" : ""}`}
+              style={{ background: c.hex }}
+              aria-label={c.label}
+              title={c.label}
+              onClick={() => {
+                onChange(c.id);
+                if (ref.current) ref.current.open = false;
+              }}
+            />
+          ))}
+        </div>
+      </div>
+    </details>
+  );
+}
+
 export default function HomePage() {
   const router = useRouter();
   const [themeMode, setThemeMode] = useState<ThemeMode>(getInitialTheme);
+  const [accentColor, setAccentColor] = useState<AccentColor>(getInitialAccent);
   const [dashboardVisibility, setDashboardVisibility] = useState<DashboardVisibilitySettings>(
     getInitialDashboardVisibility,
   );
@@ -1388,6 +1460,15 @@ export default function HomePage() {
     document.documentElement.dataset.theme = themeMode;
     window.localStorage.setItem(THEME_STORAGE_KEY, themeMode);
   }, [themeMode]);
+
+  useEffect(() => {
+    if (accentColor === "blue") {
+      delete document.documentElement.dataset.accent;
+    } else {
+      document.documentElement.dataset.accent = accentColor;
+    }
+    window.localStorage.setItem(ACCENT_STORAGE_KEY, accentColor);
+  }, [accentColor]);
 
   useEffect(() => {
     window.localStorage.setItem(
@@ -4726,6 +4807,7 @@ export default function HomePage() {
               {themeMode === "dark" ? <SunMedium /> : <MoonStar />}
             </span>
           </button>
+          <ColorPicker accent={accentColor} onChange={setAccentColor} />
           <details className="operator-menu" ref={operatorMenuRef}>
             <summary className="operator-menu-trigger">
               <span className="operator-menu-avatar" aria-hidden="true">{sessionInitials}</span>
