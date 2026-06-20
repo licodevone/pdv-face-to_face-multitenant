@@ -1,0 +1,44 @@
+<!-- @dsCard group="Components" viewport="700x340" name="Catalog — ProductCard / CategoryChip" subtitle="Catalog tiles and category filter chips" -->
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  body { margin: 0; padding: 22px; }
+  .wrap { display: grid; gap: 14px; }
+  .chips { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+</style>
+</head>
+<body>
+  <div id="root" class="wrap"></div>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <script src="../../_ds_bundle.js"></script>
+  <script type="text/babel">
+    const { ProductCard, CategoryChip } = window.PDVFaceDeliveryDesignSystem_dfcaa0;
+    const P = "../../assets/produtos/";
+    function Demo() {
+      return (
+        <>
+          <div className="chips">
+            <CategoryChip label="Todos" count={128} active />
+            <CategoryChip label="Alimentos" count={42} />
+            <CategoryChip label="Bebidas" count={24} />
+            <CategoryChip label="Limpeza" count={18} />
+          </div>
+          <div className="grid">
+            <ProductCard name="Arroz branco tipo 1 pacote 5kg" priceInCents={2790} imageUrl={P+"sku-arroz-5kg.png"} stockStatus="AVAILABLE" />
+            <ProductCard name="Café torrado e moído 500g" priceInCents={1890} imageUrl={P+"sku-cafe-500g.png"} stockStatus="LOW_STOCK" />
+            <ProductCard name="Cerveja pilsen lata 350ml" priceInCents={399} imageUrl={P+"sku-cerveja-lata-350ml.png"} stockStatus="OUT_OF_STOCK" />
+            <ProductCard name="Banana prata (kg)" priceInCents={649} imageUrl={P+"sku-banana-kg.png"} unit="KG" />
+          </div>
+        </>
+      );
+    }
+    ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+  </script>
+</body>
+</html>

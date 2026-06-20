@@ -1,0 +1,33 @@
+<!-- @dsCard group="Brand" viewport="700x230" name="Logo" subtitle="Hexagonal 'F·D' tech shield — Face Delivery mark" -->
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 24px; font-family: var(--font-sans); }
+  .row { display: flex; gap: 22px; align-items: center; flex-wrap: wrap; }
+  .tile { display: flex; align-items: center; gap: 14px; padding: 16px 20px; border-radius: var(--radius-xl); border: 1px solid var(--button-border); }
+  .onnavy { background: var(--surface); }
+  .ongrad { background: var(--panel-gradient); }
+  .tile img { width: 64px; height: 64px; }
+  .lk { display: grid; gap: 2px; }
+  .lk b { color: var(--text); font-size: 1.6rem; font-weight: 900; letter-spacing: -0.06em; line-height: 0.9; }
+  .ongrad .lk b { color: #fff; }
+  .lk small { color: var(--muted); font-size: 0.6rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; }
+  .ongrad .lk small { color: rgba(255,255,255,0.9); }
+</style>
+</head>
+<body>
+  <div class="row">
+    <div class="tile onnavy">
+      <img src="../assets/brand-logo.svg" alt="PDV Face Delivery logo">
+      <div class="lk"><b>Face Delivery</b><small>PDV · on surface</small></div>
+    </div>
+    <div class="tile ongrad">
+      <img src="../assets/brand-logo-white.svg" alt="PDV Face Delivery logo white">
+      <div class="lk"><b>Face Delivery</b><small>PDV · on gradient</small></div>
+    </div>
+  </div>
+</body>
+</html>

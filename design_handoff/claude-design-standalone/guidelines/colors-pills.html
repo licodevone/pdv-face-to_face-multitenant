@@ -1,0 +1,31 @@
+<!-- @dsCard group="Colors" viewport="700x150" name="Status pills" subtitle="Tinted, fully-rounded state chips (color-mix over surface)" -->
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 26px; }
+  .wrap { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    border-radius: var(--radius-pill);
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.02em;
+    padding: 0.5rem 0.7rem; text-transform: uppercase;
+  }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+  .success { background: color-mix(in srgb, var(--success) 14%, transparent); color: var(--success); }
+  .warn    { background: color-mix(in srgb, var(--warning) 15%, transparent); color: var(--warning); }
+  .danger  { background: color-mix(in srgb, var(--danger) 14%, transparent); color: var(--danger); }
+  .neutral { background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--text); }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <span class="pill success"><span class="dot"></span>Disponível</span>
+    <span class="pill warn"><span class="dot"></span>Estoque baixo</span>
+    <span class="pill danger"><span class="dot"></span>Esgotado</span>
+    <span class="pill neutral"><span class="dot"></span>Caixa aberto</span>
+  </div>
+</body>
+</html>

@@ -1949,7 +1949,9 @@ html[data-theme="light"] .operator-menu-item:focus-visible {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-.catalog-heading-title {
+.catalog-heading-title,
+.catalog-heading > .minimum-stock-panel,
+.catalog-heading > .pdv-catalog-subtitle {
   grid-column: 1 / -1;
 }
 
@@ -4829,4 +4831,21 @@ html[data-theme="light"] .fd-header__nav a:hover {
   .fd-device__screen--phone {
     height: calc(200px - 8px);
   }
+}
+
+.cash-movement-description {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary, #6b7280);
+  margin: 0 0 12px 0;
+  line-height: 1.4;
+}
+
+.cash-movement-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.cash-movement-actions .secondary-button {
+  flex: 1;
+  justify-content: center;
 }

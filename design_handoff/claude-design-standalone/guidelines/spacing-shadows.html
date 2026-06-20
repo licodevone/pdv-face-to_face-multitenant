@@ -1,0 +1,24 @@
+<!-- @dsCard group="Spacing" viewport="700x210" name="Shadow & glow" subtitle="Deep-navy ambient shadow + signature blue glow on hover" -->
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 30px 24px; font-family: var(--font-sans); }
+  .row { display: flex; gap: 26px; flex-wrap: wrap; }
+  .s { display: grid; gap: 12px; justify-items: center; }
+  .box { width: 130px; height: 74px; border-radius: var(--radius-lg); background: var(--surface); border: 1px solid var(--line); }
+  .s b { color: var(--text); font-size: 0.72rem; font-weight: 800; }
+  .s span { color: var(--muted); font-size: 0.6rem; }
+</style>
+</head>
+<body>
+  <div class="row">
+    <div class="s"><div class="box" style="box-shadow:var(--shadow)"></div><b>--shadow</b><span>ambient navy</span></div>
+    <div class="s"><div class="box" style="box-shadow:var(--button-shadow)"></div><b>--button-shadow</b><span>+ inner highlight</span></div>
+    <div class="s"><div class="box" style="box-shadow:var(--glow-soft); border-color:var(--button-border)"></div><b>--glow-soft</b><span>hover bloom</span></div>
+    <div class="s"><div class="box" style="box-shadow:var(--glow-strong); border-color:var(--button-border)"></div><b>--glow-strong</b><span>active bloom</span></div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,34 @@
+<!-- @dsCard group="Brand" viewport="700x180" name="Gradient & glass" subtitle="Blue→indigo→sky panel gradient with white inner highlight" -->
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 24px; font-family: var(--font-sans); }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .panel {
+    border-radius: var(--radius-xl); border: 1px solid var(--button-border);
+    padding: 18px; color: #fff; min-height: 92px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 100%), var(--panel-gradient);
+    box-shadow: 0 0 0.8rem rgba(96,165,250,0.2), var(--shadow);
+  }
+  .glass {
+    border-radius: var(--radius-xl); border: 1px solid var(--line);
+    padding: 18px; min-height: 92px; color: var(--text);
+    background: color-mix(in srgb, var(--surface) 86%, transparent);
+    backdrop-filter: var(--blur-panel);
+    box-shadow: var(--shadow);
+  }
+  .panel b, .glass b { display: block; font-size: 1.05rem; font-weight: 900; letter-spacing: -0.03em; }
+  .panel span, .glass span { font-size: 0.66rem; opacity: 0.85; }
+  .glass span { color: var(--muted); }
+</style>
+</head>
+<body>
+  <div class="row">
+    <div class="panel"><b>--panel-gradient</b><span>topbar · modal header · footer</span></div>
+    <div class="glass"><b>Glass surface</b><span>color-mix + blur(14px) · cards & panels</span></div>
+  </div>
+</body>
+</html>

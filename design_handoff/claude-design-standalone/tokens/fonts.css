@@ -1,0 +1,7 @@
+/* ============================================================
+   PDV Face Delivery — Webfonts
+   The product ships Inter (Next.js / system stack). Here it is
+   loaded from Google Fonts so consumers get the real metrics.
+   ============================================================ */
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap");

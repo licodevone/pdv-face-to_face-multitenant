@@ -1,0 +1,24 @@
+<!-- @dsCard group="Colors" viewport="700x160" name="Semantic status" subtitle="Success / warning / danger — used for stock & cash states" -->
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 22px; }
+  .row { display: flex; gap: 12px; }
+  .sw { flex: 1; border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--line); }
+  .chip { height: 60px; }
+  .meta { padding: 8px 10px; background: var(--surface); }
+  .meta b { display: block; color: var(--text); font-size: 0.78rem; font-weight: 800; }
+  .meta span { color: var(--muted); font-size: 0.66rem; font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+  <div class="row">
+    <div class="sw"><div class="chip" style="background:var(--success)"></div><div class="meta"><b>success</b><span>#22c55e · Disponível</span></div></div>
+    <div class="sw"><div class="chip" style="background:var(--warning)"></div><div class="meta"><b>warning</b><span>#fbbf24 · Estoque baixo</span></div></div>
+    <div class="sw"><div class="chip" style="background:var(--danger)"></div><div class="meta"><b>danger</b><span>#fb7185 · Esgotado</span></div></div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,23 @@
+<!-- @dsCard group="Type" viewport="700x200" name="Body, eyebrow & numerals" subtitle="Muted secondary text, uppercase eyebrow, tabular currency" -->
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 24px; font-family: var(--font-sans); color: var(--text); }
+  .stack { display: grid; gap: 14px; max-width: 520px; }
+  .body { font-size: var(--text-base); line-height: 1.6; }
+  .muted { color: var(--muted); font-size: var(--text-sm); line-height: 1.5; }
+  .total { color: var(--accent-strong); font-size: 2.4rem; font-weight: 900; letter-spacing: -0.05em; font-variant-numeric: tabular-nums; }
+  .tag { color: var(--muted); font-size: 0.6rem; font-weight: 700; letter-spacing: 0.04em; margin-top: 4px; }
+</style>
+</head>
+<body>
+  <div class="stack">
+    <div><p class="eyebrow" style="margin:0">MENU GERENCIAL</p><div class="tag">.eyebrow · 0.74rem · 900 · 0.16em · UPPERCASE</div></div>
+    <div><div class="body">Monitorar abertura, troco e divergências do turno da manhã.</div><div class="muted">Body 0.92rem · Muted 0.82rem (var --muted)</div></div>
+    <div><div class="total">R$ 1.248,90</div><div class="tag">Total · tabular-nums · accent-strong</div></div>
+  </div>
+</body>
+</html>

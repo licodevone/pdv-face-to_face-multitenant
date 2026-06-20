@@ -1,0 +1,27 @@
+<!-- @dsCard group="Colors" viewport="700x190" name="Neutrals & surfaces" subtitle="Deep-navy backgrounds, raised surfaces, hairline borders, text" -->
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 22px; }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .sw { flex: 1; min-width: 104px; border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--line); }
+  .chip { height: 56px; }
+  .meta { padding: 7px 9px; background: var(--surface); }
+  .meta b { display: block; color: var(--text); font-size: 0.74rem; font-weight: 800; }
+  .meta span { color: var(--muted); font-size: 0.64rem; font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+  <div class="row">
+    <div class="sw"><div class="chip" style="background:var(--background-strong)"></div><div class="meta"><b>bg-strong</b><span>#050816</span></div></div>
+    <div class="sw"><div class="chip" style="background:var(--background)"></div><div class="meta"><b>background</b><span>#090d1a</span></div></div>
+    <div class="sw"><div class="chip" style="background:var(--background-soft)"></div><div class="meta"><b>bg-soft</b><span>#101827</span></div></div>
+    <div class="sw"><div class="chip" style="background:var(--surface)"></div><div class="meta"><b>surface</b><span>#111827</span></div></div>
+    <div class="sw"><div class="chip" style="background:var(--surface-soft)"></div><div class="meta"><b>surface-soft</b><span>#172033</span></div></div>
+    <div class="sw"><div class="chip" style="background:var(--surface-muted)"></div><div class="meta"><b>surface-muted</b><span>#243149</span></div></div>
+  </div>
+</body>
+</html>

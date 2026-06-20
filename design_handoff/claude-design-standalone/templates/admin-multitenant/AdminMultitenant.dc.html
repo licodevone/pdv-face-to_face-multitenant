@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Administração Multitenant" description="Painel exclusivo do admin do sistema para criar, editar e excluir tenants (clientes)" -->
+<helmet>
+  <script src="./ds-base.js"></script>
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <style>
+    @media (max-width: 900px) {
+      .adm-two-col { grid-template-columns: 1fr !important; }
+      .adm-form-two { grid-template-columns: 1fr !important; }
+    }
+    @media (max-width: 600px) {
+      .adm-shell { padding: 0.5rem !important; }
+      .adm-topbar h1 { font-size: 1.1rem !important; }
+    }
+  </style>
+</helmet>
+
+<div class="adm-shell" style="display:grid; gap:0.75rem; min-height:100vh; padding:0.85rem clamp(0.85rem,3vw,2.2rem); font-family:var(--font-sans); color:var(--text);">
+
+  <!-- Topbar -->
+  <header class="adm-topbar" style="display:flex; align-items:center; justify-content:space-between; gap:0.75rem; border-radius:var(--radius-xl); border:1px solid var(--button-border); padding:0.65rem 0.85rem; color:#f8fafc; background:linear-gradient(180deg,rgba(255,255,255,0.18) 0%,rgba(255,255,255,0.06) 100%),var(--panel-gradient); box-shadow:0 0 0.8rem rgba(96,165,250,0.2),var(--shadow);">
+    <div style="display:flex; align-items:center; gap:0.75rem;">
+      <img src="../../assets/brand-logo-white.svg" alt="logo" style="height:50px; width:50px;">
+      <div>
+        <p style="margin:0 0 1px; font-size:0.7rem; font-weight:900; letter-spacing:0.16em; text-transform:uppercase; color:#fff;">Administração do sistema</p>
+        <h1 style="margin:0; font-size:1.5rem; letter-spacing:-0.05em; color:#f8fafc;">Painel multitenant</h1>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:0.5rem;">
+      <span style="display:inline-flex; align-items:center; gap:0.35rem; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.18); border-radius:var(--radius-pill); color:#fff; font-size:0.7rem; font-weight:900; padding:0.4rem 0.65rem; text-transform:uppercase; letter-spacing:0.08em;">
+        <i data-lucide="shield-check" style="width:13px;height:13px;"></i> admin@pdv.local
+      </span>
+      <button onClick="{{ goBack }}" style="display:inline-flex; align-items:center; gap:0.4rem; height:2.4rem; padding:0 0.75rem; border-radius:var(--radius-md); background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.18); color:#fff; font-size:0.82rem; font-weight:800; cursor:pointer;">
+        <i data-lucide="arrow-left" style="width:15px;height:15px;"></i> Voltar ao PDV
+      </button>
+    </div>
+  </header>
+
+  <!-- Status strip -->
+  <div style="background:color-mix(in srgb,var(--surface-soft) 92%,transparent); border:1px solid var(--line); border-radius:var(--radius-lg); padding:0.65rem 0.85rem; display:flex; align-items:center; gap:0.6rem;">
+    <i data-lucide="info" style="width:15px;height:15px;color:var(--accent-soft);flex-shrink:0;"></i>
+    <span style="color:var(--muted); font-size:0.82rem;">{{ statusMessage }}</span>
+  </div>
+
+  <!-- Tenant list -->
+  <section style="background:color-mix(in srgb,var(--surface) 92%,transparent); border:1px solid var(--line); border-radius:var(--radius-xl); padding:0.9rem; display:grid; gap:0.65rem;">
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:0.5rem;">
+      <div>
+        <h2 style="margin:0; font-size:1.2rem; letter-spacing:-0.04em;">Clientes cadastrados</h2>
+        <p style="margin:2px 0 0; color:var(--muted); font-size:0.82rem;">{{ tenantCountLabel }}</p>
+      </div>
+      <button onClick="{{ openNewTenant }}" class="pdv-btn pdv-btn--primary pdv-btn--sm" style="display:inline-flex; align-items:center; gap:0.4rem;">
+        <i data-lucide="plus" style="width:15px;height:15px;"></i> Novo cliente
+      </button>
+    </div>
+
+    <div style="display:grid; gap:0.35rem;">
+      <sc-for list="{{ tenants }}" as="t" hint-placeholder-count="3">
+        <article style="background:color-mix(in srgb,var(--surface-soft) 92%,transparent); border:1px solid var(--line); border-radius:var(--radius-md); padding:0.65rem 0.8rem;">
+
+          <!-- View mode -->
+          <div class="{{ t.viewClass }}" style="display:grid; gap:0.25rem;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:0.5rem; flex-wrap:wrap;">
+              <div style="display:flex; align-items:center; gap:0.55rem;">
+                <i data-lucide="building-2" style="width:16px;height:16px;color:var(--accent-soft);"></i>
+                <strong style="font-size:0.95rem; color:var(--text);">{{ t.name }}</strong>
+                <span class="{{ t.activeBadgeClass }}" style="font-size:0.52rem; font-weight:900; padding:0.2rem 0.45rem; border-radius:var(--radius-pill); text-transform:uppercase; letter-spacing:0.04em;">{{ t.activeLabel }}</span>
+              </div>
+              <div style="display:flex; gap:0.4rem;">
+                <button onClick="{{ t.edit }}" class="pdv-btn pdv-btn--ghost pdv-btn--sm"><i data-lucide="pencil" style="width:13px;height:13px;"></i> Editar</button>
+                <button onClick="{{ t.remove }}" class="pdv-btn pdv-btn--ghost pdv-btn--sm" style="color:var(--danger);"><i data-lucide="trash-2" style="width:13px;height:13px;"></i> Excluir</button>
+              </div>
+            </div>
+            <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+              <span style="color:var(--muted); font-size:0.75rem; font-variant-numeric:tabular-nums;"><strong style="color:var(--text);">slug:</strong> {{ t.slug }}</span>
+              <span style="color:var(--muted); font-size:0.75rem; font-variant-numeric:tabular-nums;"><strong style="color:var(--text);">id:</strong> {{ t.id }}</span>
+              <span style="color:var(--muted); font-size:0.75rem;"><strong style="color:var(--text);">admin:</strong> {{ t.adminEmail }}</span>
+            </div>
+          </div>
+
+          <!-- Edit mode -->
+          <div class="{{ t.editClass }}" style="display:grid; gap:0.5rem;">
+            <p style="margin:0; color:var(--accent-soft); font-size:0.72rem; font-weight:900; letter-spacing:0.12em; text-transform:uppercase;">Editando — {{ t.name }}</p>
+            <div class="adm-form-two" style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
+              <label style="display:grid; gap:0.35rem;"><span style="color:var(--muted); font-size:0.82rem; font-weight:600;">Nome do cliente</span>
+                <input class="pdv-input" value="{{ t.draftName }}" onInput="{{ t.setName }}" placeholder="Nome da loja"></label>
+              <label style="display:grid; gap:0.35rem;"><span style="color:var(--muted); font-size:0.82rem; font-weight:600;">Slug</span>
+                <input class="pdv-input" value="{{ t.draftSlug }}" onInput="{{ t.setSlug }}" placeholder="loja-demo"></label>
+            </div>
+            <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+              <input type="checkbox" checked="{{ t.draftActive }}" onChange="{{ t.toggleActive }}" style="width:auto;">
+              <span style="color:var(--text); font-size:0.85rem; font-weight:600;">Cliente ativo</span>
+            </label>
+            <div style="display:flex; gap:0.4rem; justify-content:flex-end;">
+              <button onClick="{{ t.cancel }}" class="pdv-btn pdv-btn--ghost pdv-btn--sm">Cancelar</button>
+              <button onClick="{{ t.save }}" class="pdv-btn pdv-btn--primary pdv-btn--sm"><i data-lucide="save" style="width:13px;height:13px;"></i> Salvar</button>
+            </div>
+          </div>
+
+        </article>
+      </sc-for>
+
+      <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid; justify-items:center; gap:0.5rem; padding:1.5rem; text-align:center;">
+          <i data-lucide="building-2" style="width:40px;height:40px;color:var(--muted);"></i>
+          <span style="color:var(--muted); font-size:0.88rem;">Nenhum cliente cadastrado ainda. Clique em <strong>Novo cliente</strong> para começar.</span>
+        </div>
+      </sc-if>
+    </div>
+  </section>
+
+  <!-- Consultar tenant -->
+  <section style="background:color-mix(in srgb,var(--surface) 92%,transparent); border:1px solid var(--line); border-radius:var(--radius-xl); padding:0.9rem; display:grid; gap:0.6rem;">
+    <div>
+      <p style="margin:0 0 2px; color:var(--accent-soft); font-size:0.72rem; font-weight:900; letter-spacing:0.12em; text-transform:uppercase;">Consulta</p>
+      <h3 style="margin:0 0 2px; font-size:1.1rem; letter-spacing:-0.04em;">Consultar tenant</h3>
+      <p style="margin:0; color:var(--muted); font-size:0.82rem;">Informe o slug ou id do cliente para verificar a infraestrutura cadastrada.</p>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr auto; gap:0.5rem; align-items:end;">
+      <label style="display:grid; gap:0.4rem;">
+        <span style="color:var(--muted); font-size:0.82rem; font-weight:600;">Slug ou id do tenant</span>
+        <input class="pdv-input" value="{{ tenantLookup }}" onInput="{{ setTenantLookup }}" placeholder="ex.: loja-demo">
+      </label>
+      <button onClick="{{ resolveTenant }}" class="pdv-btn pdv-btn--primary" style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.7rem 1rem; white-space:nowrap;"><i data-lucide="search" style="width:14px;height:14px;"></i> Consultar</button>
+    </div>
+    <div class="{{ resolvedHiddenClass }}" style="background:color-mix(in srgb,var(--success) 8%,var(--surface-soft)); border:1px solid color-mix(in srgb,var(--success) 22%,transparent); border-radius:var(--radius-md); padding:0.65rem 0.8rem; display:grid; gap:0.2rem;">
+      <strong style="color:var(--text); font-size:0.88rem;">{{ resolvedName }}</strong>
+      <span style="color:var(--muted); font-size:0.78rem;">{{ resolvedSlug }} · {{ resolvedId }} · {{ resolvedStatus }}</span>
+    </div>
+  </section>
+
+  <!-- Novo cliente form -->
+  <section class="{{ newFormHiddenClass }}" style="display:grid; gap:0.65rem; background:color-mix(in srgb,var(--surface) 92%,transparent); border:1px solid var(--line); border-radius:var(--radius-xl); padding:0.9rem;">
+    <div>
+      <p style="margin:0 0 2px; color:var(--accent-soft); font-size:0.72rem; font-weight:900; letter-spacing:0.12em; text-transform:uppercase;">Provisionamento</p>
+      <h2 style="margin:0; font-size:1.2rem; letter-spacing:-0.04em;">Novo cliente</h2>
+      <p style="margin:2px 0 0; color:var(--muted); font-size:0.82rem;">Crie a estrutura inicial do cliente e o primeiro administrador do tenant.</p>
+    </div>
+
+    <div class="adm-two-col" style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+
+      <!-- Tenant info -->
+      <div style="display:grid; gap:0.55rem; background:color-mix(in srgb,var(--surface-soft) 92%,transparent); border:1px solid var(--line); border-radius:var(--radius-lg); padding:0.7rem;">
+        <p style="margin:0; color:var(--muted); font-size:0.72rem; font-weight:800; text-transform:uppercase; letter-spacing:0.08em;">Dados do cliente</p>
+        <label style="display:grid; gap:0.35rem;"><span style="color:var(--muted); font-size:0.82rem; font-weight:600;">Nome do cliente *</span>
+          <input class="pdv-input" value="{{ draft.tenantName }}" onInput="{{ setTenantName }}" placeholder="Ex.: Mercado São João" required></label>
+        <div class="adm-form-two" style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
+          <label style="display:grid; gap:0.35rem;"><span style="color:var(--muted); font-size:0.82rem; font-weight:600;">Tenant ID <small>(opcional)</small></span>
+            <input class="pdv-input" value="{{ draft.tenantId }}" onInput="{{ setTenantId }}" placeholder="auto"></label>
+          <label style="display:grid; gap:0.35rem;"><span style="color:var(--muted); font-size:0.82rem; font-weight:600;">Slug <small>(opcional)</small></span>
+            <input class="pdv-input" value="{{ draft.tenantSlug }}" onInput="{{ setTenantSlug }}" placeholder="mercado-sao-joao"></label>
+        </div>
+      </div>
+
+      <!-- Admin info -->
+      <div style="display:grid; gap:0.55rem; background:color-mix(in srgb,var(--surface-soft) 92%,transparent); border:1px solid var(--line); border-radius:var(--radius-lg); padding:0.7rem;">
+        <p style="margin:0; color:var(--muted); font-size:0.72rem; font-weight:800; text-transform:uppercase; letter-spacing:0.08em;">Administrador inicial</p>
+        <label style="display:grid; gap:0.35rem;"><span style="color:var(--muted); font-size:0.82rem; font-weight:600;">Nome do admin *</span>
+          <input class="pdv-input" value="{{ draft.adminName }}" onInput="{{ setAdminName }}" placeholder="Ex.: João Silva" required></label>
+        <label style="display:grid; gap:0.35rem;"><span style="color:var(--muted); font-size:0.82rem; font-weight:600;">E-mail do admin *</span>
+          <input class="pdv-input" type="email" value="{{ draft.adminEmail }}" onInput="{{ setAdminEmail }}" placeholder="joao@loja.com.br" required></label>
+        <label style="display:grid; gap:0.35rem;"><span style="color:var(--muted); font-size:0.82rem; font-weight:600;">Senha inicial *</span>
+          <input class="pdv-input" type="password" value="{{ draft.adminPassword }}" onInput="{{ setAdminPassword }}" placeholder="mín. 8 caracteres" required></label>
+      </div>
+
+    </div>
+
+    <div style="display:flex; align-items:center; justify-content:flex-end; gap:0.5rem; border-top:1px solid var(--line); padding-top:0.65rem;">
+      <button onClick="{{ cancelNewTenant }}" class="pdv-btn pdv-btn--ghost">Cancelar</button>
+      <button onClick="{{ submitNewTenant }}" class="pdv-btn pdv-btn--primary" style="display:inline-flex; align-items:center; gap:0.45rem;">
+        <i data-lucide="check-check" style="width:16px;height:16px;"></i> Criar cliente
+      </button>
+    </div>
+  </section>
+
+  <!-- Profile Screen Configurator -->
+  <section style="background:color-mix(in srgb,var(--surface) 92%,transparent); border:1px solid var(--line); border-radius:var(--radius-xl); padding:0.9rem; display:grid; gap:0.75rem;">
+    <div>
+      <p style="margin:0 0 2px; color:var(--accent-soft); font-size:0.72rem; font-weight:900; letter-spacing:0.12em; text-transform:uppercase;">Personalização</p>
+      <h2 style="margin:0; font-size:1.2rem; letter-spacing:-0.04em;">Configuração de telas por perfil</h2>
+      <p style="margin:2px 0 0; color:var(--muted); font-size:0.82rem;">Ative ou desative seções para cada tipo de usuário. As alterações afetam todos os clientes desse perfil.</p>
+    </div>
+
+    <!-- Profile tabs -->
+    <div style="display:flex; gap:0.4rem; border-bottom:1px solid var(--line); padding-bottom:0.55rem;">
+      <sc-for list="{{ profileTabs }}" as="tab" hint-placeholder-count="3">
+        <button onClick="{{ tab.select }}" style="display:inline-flex; align-items:center; gap:0.4rem; border-radius:var(--radius-md) var(--radius-md) 0 0; border:1px solid var(--line); border-bottom:none; padding:0.5rem 0.85rem; font-size:0.82rem; font-weight:800; cursor:pointer; transition:background 0.18s ease;" class="{{ tab.activeClass }}">
+          <i data-lucide="{{ tab.icon }}" style="width:14px;height:14px;"></i>
+          {{ tab.label }}
+        </button>
+      </sc-for>
+    </div>
+
+    <!-- Active profile sections -->
+    <div style="display:grid; gap:0.5rem;">
+      <p style="margin:0; color:var(--muted); font-size:0.78rem;">{{ activeProfileDesc }}</p>
+      <div style="display:grid; gap:0.35rem;">
+        <sc-for list="{{ activeProfileSections }}" as="sec" hint-placeholder-count="6">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:0.75rem; background:color-mix(in srgb,var(--surface-soft) 92%,transparent); border:1px solid var(--line); border-radius:var(--radius-md); padding:0.6rem 0.8rem;">
+            <div style="display:flex; align-items:center; gap:0.6rem; min-width:0;">
+              <i data-lucide="{{ sec.icon }}" style="width:16px;height:16px;color:var(--accent-soft);flex-shrink:0;"></i>
+              <div>
+                <div style="font-size:0.85rem; font-weight:700; color:var(--text);">{{ sec.label }}</div>
+                <div style="font-size:0.72rem; color:var(--muted); line-height:1.4;">{{ sec.desc }}</div>
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.5rem; flex-shrink:0;">
+              <span class="{{ sec.lockedClass }}" style="color:var(--muted); font-size:0.68rem; font-weight:800; text-transform:uppercase;">Obrigatório</span>
+              <button onClick="{{ sec.toggle }}" class="{{ sec.toggleBtnClass }}" style="display:inline-flex; align-items:center; gap:0.35rem; border-radius:var(--radius-pill); font-size:0.72rem; font-weight:900; padding:0.3rem 0.65rem; transition:all 0.18s ease;">
+                <i data-lucide="{{ sec.toggleIcon }}" style="width:12px;height:12px;"></i>{{ sec.toggleLabel }}
+              </button>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer style="display:flex; justify-content:center; padding:0.35rem 0 0.6rem;">
+    <div style="width:100%; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; border-radius:var(--radius-xl); border:1px solid var(--button-border); padding:0.6rem 1rem; background:linear-gradient(180deg,rgba(255,255,255,0.16) 0%,rgba(255,255,255,0.06) 100%),var(--panel-gradient); box-shadow:0 0 0.7rem rgba(96,165,250,0.22),var(--shadow);">
+      <div style="display:flex; align-items:center; gap:0.6rem;">
+        <img src="../../assets/brand-logo-white.svg" alt="logo" style="height:26px;width:26px;">
+        <strong style="color:#fff; font-size:0.78rem; font-weight:900; letter-spacing:0.04em; text-transform:uppercase;">PDV Face Delivery · Sistema Multitenant</strong>
+      </div>
+      <a href="https://wa.me/5512988601020" target="_blank" rel="noreferrer" style="display:inline-flex; align-items:center; gap:0.45rem; color:#fff; text-decoration:none; font-weight:800; font-size:0.85rem;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        +55 (12) 98860-1020
+      </a>
+    </div>
+  </footer>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:860}}">
+class Component extends DCLogic {
+  state = {
+    showNewForm: false,
+    editingId: null,
+    activeProfile: "caixa",
+    profileConfig: {
+      ADMIN: {
+        "metricas":    true,  "gerencial":  true,  "categorias": true,
+        "busca":       true,  "carrinho":   true,   "cliente":    true,
+        "desconto":    true,  "relatorios": true,   "config-disp":true,
+      },
+      MANAGER: {
+        "metricas":    true,  "gerencial":  true,  "categorias": true,
+        "busca":       true,  "carrinho":   true,   "cliente":    true,
+        "desconto":    true,  "relatorios": true,   "config-disp":false,
+      },
+      CASHIER: {
+        "metricas":    true,  "gerencial":  false,  "categorias": true,
+        "busca":       true,  "carrinho":   true,   "cliente":    true,
+        "desconto":    false, "relatorios": false,  "config-disp":false,
+      },
+      STOCKIST: {
+        "metricas":    true,  "gerencial":  false,  "categorias": false,
+        "busca":       true,  "carrinho":   false,  "cliente":    false,
+        "desconto":    false, "relatorios": true,   "config-disp":false,
+        "estoque":     true,  "entrada-saida": true,
+      },
+    },
+    tenantLookup: "",
+    resolvedTenant: null,
+    statusMessage: "Use esta área para consultar tenants existentes ou criar um novo cliente.",
+    tenants: [
+      { id: "t-demo-001", name: "Loja Centro",        slug: "loja-centro",        adminEmail: "admin@loja-centro.com.br",   isActive: true,  draftName: "Loja Centro",        draftSlug: "loja-centro",        draftActive: true },
+      { id: "t-demo-002", name: "Mercado São João",   slug: "mercado-sao-joao",   adminEmail: "admin@mercadosaojoao.com",   isActive: true,  draftName: "Mercado São João",   draftSlug: "mercado-sao-joao",   draftActive: true },
+      { id: "t-demo-003", name: "Conveniência Norte", slug: "conveniencia-norte", adminEmail: "admin@convnorte.com.br",     isActive: false, draftName: "Conveniência Norte", draftSlug: "conveniencia-norte", draftActive: false },
+    ],
+    draft: { tenantName: "", tenantId: "", tenantSlug: "", adminName: "", adminEmail: "", adminPassword: "" },
+  };
+
+  componentDidMount()  {
+    try {
+      const a = localStorage.getItem("pdv_accent");
+      if (a && a !== "mono") document.documentElement.dataset.accent = a;
+    } catch(e) {}
+    if (window.lucide) window.lucide.createIcons();
+  }
+  componentDidUpdate() { if (window.lucide) window.lucide.createIcons(); }
+
+  // Roles aligned with production: operator-roles.ts (ADMIN, MANAGER, CASHIER, STOCKIST)
+  profileDefs = [
+    { id: "ADMIN",    label: "Administrador", icon: "shield",           desc: "Acesso completo ao PDV, gerencial e relatórios" },
+    { id: "MANAGER",  label: "Gerente",        icon: "layout-dashboard", desc: "Acesso gerencial, relatórios e operação de caixa" },
+    { id: "CASHIER",  label: "Funcionário",    icon: "monitor",          desc: "Operação de frente de caixa e vendas" },
+    { id: "STOCKIST", label: "Estoquista",     icon: "warehouse",        desc: "Gestão de estoque e relatórios de inventário" },
+  ];
+
+  sectionDefs = [
+    { id: "metricas",     label: "Métricas de resumo",       icon: "chart-bar",        desc: "Painel com ticket médio, sessão do caixa e produtos ativos.",        locked: ["carrinho"] },
+    { id: "gerencial",    label: "Menu gerencial",            icon: "layout-dashboard", desc: "Acesso a categorias, produtos, clientes, estoque e configurações.",    locked: [] },
+    { id: "categorias",   label: "Chips de categoria",        icon: "blocks",           desc: "Filtros rápidos por categoria no catálogo de produtos.",               locked: [] },
+    { id: "busca",        label: "Campo de busca",            icon: "search",           desc: "Busca por nome, SKU ou código de barras no catálogo.",                 locked: [] },
+    { id: "carrinho",     label: "Carrinho de vendas",        icon: "shopping-cart",    desc: "Lista de itens, totais e finalização da venda. Obrigatório para caixa.", locked: ["caixa", "admin"] },
+    { id: "cliente",      label: "Identificação de cliente",  icon: "user",             desc: "Seleção de cliente ou consumidor final para vincular à venda.",         locked: [] },
+    { id: "desconto",     label: "Desconto na venda",         icon: "percent",          desc: "Campo de percentual de desconto aplicado ao total da venda.",           locked: [] },
+    { id: "relatorios",   label: "Relatórios",                icon: "clipboard-list",   desc: "Acesso a modelos de relatórios operacionais e financeiros.",            locked: [] },
+    { id: "estoque",      label: "Gestão de estoque",         icon: "package",          desc: "Visualização e ajuste de saldos de estoque dos produtos.",              locked: [] },
+    { id: "entrada-saida",label: "Entrada e saída",           icon: "arrow-left-right", desc: "Registro de movimentações de entrada e saída de mercadorias.",          locked: [] },
+    { id: "config-disp",  label: "Configuração de dispositivos", icon: "settings",      desc: "Balança, impressora e perfis de notas fiscais do PDV.",                 locked: [] },
+  ];
+
+  genId() { return "t-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2,6); }
+
+  slugify(name) {
+    return name.toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  }
+
+  renderVals() {
+    const s = this.state;
+
+    const tenants = s.tenants.map((t) => ({
+      ...t,
+      activeLabel:      t.isActive ? "Ativo" : "Inativo",
+      activeBadgeClass: t.isActive ? "pdv-badge pdv-badge--success" : "pdv-badge pdv-badge--danger",
+      viewClass:  s.editingId === t.id ? "pdv-hidden" : "",
+      editClass:  s.editingId === t.id ? "" : "pdv-hidden",
+      edit:   () => this.setState({ editingId: t.id, statusMessage: `Editando cliente "${t.name}".` }),
+      cancel: () => this.setState((st) => ({
+        editingId: null,
+        tenants: st.tenants.map((x) => x.id === t.id ? { ...x, draftName: x.name, draftSlug: x.slug, draftActive: x.isActive } : x),
+        statusMessage: "Edição cancelada.",
+      })),
+      save: () => this.setState((st) => ({
+        editingId: null,
+        tenants: st.tenants.map((x) => x.id === t.id
+          ? { ...x, name: x.draftName, slug: x.draftSlug, isActive: x.draftActive }
+          : x),
+        statusMessage: `Cliente "${t.draftName}" atualizado com sucesso.`,
+      })),
+      remove: () => {
+        if (!confirm(`Deseja realmente excluir o cliente "${t.name}"?`)) return;
+        this.setState((st) => ({
+          tenants: st.tenants.filter((x) => x.id !== t.id),
+          statusMessage: `Cliente "${t.name}" removido.`,
+        }));
+      },
+      setName:      (e) => this.setState((st) => ({ tenants: st.tenants.map((x) => x.id === t.id ? { ...x, draftName: e.target.value } : x) })),
+      setSlug:      (e) => this.setState((st) => ({ tenants: st.tenants.map((x) => x.id === t.id ? { ...x, draftSlug: e.target.value } : x) })),
+      toggleActive: (e) => this.setState((st) => ({ tenants: st.tenants.map((x) => x.id === t.id ? { ...x, draftActive: e.target.checked } : x) })),
+    }));
+
+    const d = s.draft;
+
+    return {
+      tenants,
+      isEmpty:          s.tenants.length === 0,
+      tenantCountLabel: s.tenants.length + " cliente" + (s.tenants.length === 1 ? "" : "s") + " no ambiente multitenant.",
+      statusMessage:    s.statusMessage,
+      newFormHiddenClass: s.showNewForm ? "" : "pdv-hidden",
+
+      // Profile configurator
+      profileTabs: this.profileDefs.map((p) => ({
+        ...p,
+        activeClass: s.activeProfile === p.id
+          ? "pdv-btn pdv-btn--primary pdv-btn--sm"
+          : "pdv-btn pdv-btn--ghost pdv-btn--sm",
+        select: () => this.setState({ activeProfile: p.id }),
+      })),
+
+      activeProfileDesc: (this.profileDefs.find((p) => p.id === s.activeProfile) || {}).desc || "",
+
+      activeProfileSections: this.sectionDefs.map((sec) => {
+        const cfg = s.profileConfig[s.activeProfile] || {};
+        const enabled = cfg[sec.id] !== false;
+        const isLocked = sec.locked && sec.locked.includes(s.activeProfile);
+        return {
+          ...sec,
+          enabled,
+          lockedClass: isLocked ? "" : "pdv-hidden",
+          toggleBtnClass: isLocked
+            ? "pdv-btn pdv-btn--ghost pdv-btn--sm"
+            : enabled
+              ? "pdv-btn pdv-btn--primary pdv-btn--sm"
+              : "pdv-btn pdv-btn--ghost pdv-btn--sm",
+          toggleIcon:  enabled ? "check" : "x",
+          toggleLabel: isLocked ? "Ativo" : enabled ? "Ativo" : "Inativo",
+          toggle: isLocked ? () => {} : () => this.setState((st) => {
+            const cfg = { ...(st.profileConfig[st.activeProfile] || {}) };
+            cfg[sec.id] = !cfg[sec.id];
+            return { profileConfig: { ...st.profileConfig, [st.activeProfile]: cfg } };
+          }),
+        };
+      }),
+
+      tenantLookup:    s.tenantLookup,
+      setTenantLookup: (e) => this.setState({ tenantLookup: e.target.value }),
+      resolveTenant:   () => {
+        const q = s.tenantLookup.trim().toLowerCase();
+        if (!q) { this.setState({ statusMessage: "Informe o slug ou id do tenant para consultar." }); return; }
+        const found = s.tenants.find((t) => t.id.toLowerCase() === q || t.slug.toLowerCase() === q);
+        if (found) {
+          this.setState({ resolvedTenant: found, statusMessage: `Tenant ${found.name} carregado com sucesso.` });
+        } else {
+          this.setState({ resolvedTenant: null, statusMessage: "Tenant não encontrado. Verifique o slug ou id informado." });
+        }
+      },
+      resolvedHiddenClass: s.resolvedTenant ? "" : "pdv-hidden",
+      resolvedName:   s.resolvedTenant ? s.resolvedTenant.name  : "",
+      resolvedSlug:   s.resolvedTenant ? s.resolvedTenant.slug  : "",
+      resolvedId:     s.resolvedTenant ? s.resolvedTenant.id    : "",
+      resolvedStatus: s.resolvedTenant ? (s.resolvedTenant.isActive ? "Ativo" : "Inativo") : "",
+
+      openNewTenant:   () => this.setState({ showNewForm: true, statusMessage: "Preencha os dados abaixo para criar um novo cliente." }),
+      cancelNewTenant: () => this.setState({ showNewForm: false, draft: { tenantName: "", tenantId: "", tenantSlug: "", adminName: "", adminEmail: "", adminPassword: "" }, statusMessage: "Criação de cliente cancelada." }),
+      goBack:          () => { window.location.href = "../pdv/Pdv.dc.html"; },
+
+      draft: d,
+      setTenantName:     (e) => this.setState((st) => ({ draft: { ...st.draft, tenantName: e.target.value } })),
+      setTenantId:       (e) => this.setState((st) => ({ draft: { ...st.draft, tenantId: e.target.value } })),
+      setTenantSlug:     (e) => this.setState((st) => ({ draft: { ...st.draft, tenantSlug: e.target.value } })),
+      setAdminName:      (e) => this.setState((st) => ({ draft: { ...st.draft, adminName: e.target.value } })),
+      setAdminEmail:     (e) => this.setState((st) => ({ draft: { ...st.draft, adminEmail: e.target.value } })),
+      setAdminPassword:  (e) => this.setState((st) => ({ draft: { ...st.draft, adminPassword: e.target.value } })),
+
+      submitNewTenant: () => {
+        const name  = d.tenantName.trim();
+        const email = d.adminEmail.trim();
+        const pwd   = d.adminPassword;
+        const aname = d.adminName.trim();
+        if (!name || !email || !pwd || !aname || pwd.length < 8) {
+          this.setState({ statusMessage: "Preencha todos os campos obrigatórios. A senha deve ter no mínimo 8 caracteres." });
+          return;
+        }
+        const id   = d.tenantId.trim()   || this.genId();
+        const slug = d.tenantSlug.trim() || this.slugify(name);
+        this.setState((st) => ({
+          tenants: [...st.tenants, { id, name, slug, adminEmail: email, isActive: true, draftName: name, draftSlug: slug, draftActive: true }],
+          draft: { tenantName: "", tenantId: "", tenantSlug: "", adminName: "", adminEmail: "", adminPassword: "" },
+          showNewForm: false,
+          statusMessage: `Cliente "${name}" criado com admin ${email}.`,
+        }));
+      },
+    };
+  }
+}
+</script>
+</body>
+</html>

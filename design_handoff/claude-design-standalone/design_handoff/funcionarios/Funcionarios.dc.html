@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Gestão de Funcionários" description="Lista, cadastro e edição de operadores do tenant (ADMIN/MANAGER only)" -->
+<helmet>
+  <script src="./ds-base.js"></script>
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <style>
+    @media (max-width: 900px) {
+      .func-layout { grid-template-columns: 1fr !important; }
+      .func-form-grid { grid-template-columns: 1fr !important; }
+    }
+  </style>
+</helmet>
+
+<div style="min-height:100vh; display:grid; align-content:start; background:radial-gradient(circle at 12% 8%,rgba(96,165,250,0.18),transparent 28rem),linear-gradient(135deg,var(--background) 0%,var(--background-soft) 100%); font-family:var(--font-sans); color:var(--text); gap:0.75rem; padding:clamp(0.5rem,1vw,0.75rem);">
+
+  <!-- Topbar -->
+  <header style="align-items:center; background:linear-gradient(180deg,rgba(255,255,255,0.18) 0%,rgba(255,255,255,0.06) 100%),var(--panel-gradient); border:1px solid var(--button-border); border-radius:1.2rem; color:#f8fafc; display:flex; justify-content:space-between; gap:0.75rem; padding:0.65rem 0.8rem; box-shadow:0 0 0.8rem rgba(96,165,250,0.2),var(--shadow);">
+    <div style="display:flex; align-items:center; gap:0.75rem;">
+      <img src="../../assets/brand-logo.svg" alt="logo" style="height:3.2rem;width:3.2rem;filter:drop-shadow(0 10px 18px rgba(15,23,42,0.2));">
+      <div>
+        <p style="margin:0 0 2px; color:#fff; font-size:0.62rem; font-weight:900; letter-spacing:0.16em; text-transform:uppercase;">Gestão do tenant</p>
+        <h1 style="margin:0; font-size:clamp(1.1rem,2.5vw,1.85rem); letter-spacing:-0.05em; color:#f8fafc; line-height:1;">Funcionários</h1>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:0.55rem;">
+      <button onClick="{{ refresh }}" style="display:inline-flex; align-items:center; gap:0.4rem; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.18); border-radius:var(--radius-md); color:#fff; cursor:pointer; font-size:0.84rem; font-weight:700; padding:0.5rem 0.8rem;"><i data-lucide="refresh-cw" style="width:14px;height:14px;"></i> Atualizar</button>
+      <button onClick="{{ goToPerfil }}" style="display:inline-flex; align-items:center; gap:0.4rem; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.18); border-radius:var(--radius-md); color:#fff; cursor:pointer; font-size:0.84rem; font-weight:700; padding:0.5rem 0.8rem;">← Voltar</button>
+    </div>
+  </header>
+
+  <!-- Status strip -->
+  <div style="background:color-mix(in srgb,var(--surface) 92%,transparent); border:1px solid var(--line); border-radius:var(--radius-lg); padding:0.65rem 0.9rem; display:flex; justify-content:space-between; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+    <p style="margin:0; font-size:0.84rem; color:var(--accent-soft); font-weight:600;"><strong style="color:var(--text);">Status:</strong> {{ statusMsg }}</p>
+    <p style="margin:0; font-size:0.82rem; color:var(--muted);"><strong>Administrador atual:</strong> {{ currentEmail }}</p>
+  </div>
+
+  <!-- Main layout -->
+  <div class="func-layout" style="display:grid; gap:0.75rem; grid-template-columns:260px minmax(0,1fr); align-items:start;">
+
+    <!-- Sidebar: team summary -->
+    <aside style="background:color-mix(in srgb,var(--surface-soft) 92%,transparent); border:1px solid var(--line); border-radius:var(--radius-xl); padding:1rem; display:grid; gap:0.75rem;">
+      <div>
+        <p style="margin:0 0 2px; color:var(--accent-soft); font-size:0.72rem; font-weight:900; letter-spacing:0.12em; text-transform:uppercase;">Resumo da equipe</p>
+        <p style="margin:0; color:var(--muted); font-size:0.78rem;">Visão geral dos operadores do tenant</p>
+      </div>
+      <div style="width:5rem; height:5rem; border-radius:50%; background:linear-gradient(135deg,var(--button-bg),var(--accent-strong)); display:grid; place-items:center; margin:0 auto; font-size:2rem; font-weight:900; color:#fff; box-shadow:0 0 1rem rgba(96,165,250,0.3);">{{ totalCount }}</div>
+      <div style="display:grid; gap:0.45rem;">
+        <div style="display:flex; justify-content:space-between; gap:0.5rem; border-bottom:1px solid var(--line); padding-bottom:0.45rem;">
+          <strong style="font-size:0.78rem; color:var(--muted); font-weight:600;">Total de funcionários</strong>
+          <span style="font-size:0.78rem; color:var(--text); font-weight:700;">{{ totalCount }}</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; gap:0.5rem; border-bottom:1px solid var(--line); padding-bottom:0.45rem;">
+          <strong style="font-size:0.78rem; color:var(--muted); font-weight:600;">Administradores</strong>
+          <span style="font-size:0.78rem; color:var(--text); font-weight:700;">{{ adminCount }}</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; gap:0.5rem;">
+          <strong style="font-size:0.78rem; color:var(--muted); font-weight:600;">Seu acesso</strong>
+          <span style="font-size:0.78rem; color:var(--accent-soft); font-weight:700;">{{ currentRoleLabel }}</span>
+        </div>
+      </div>
+      <p style="margin:0; color:var(--muted); font-size:0.74rem; line-height:1.55;">Funcionários e estoquistas acessam apenas o próprio perfil. A gestão da equipe fica disponível somente para administradores.</p>
+    </aside>
+
+    <!-- Main column -->
+    <div style="display:grid; gap:0.75rem;">
+
+      <!-- Create new operator form -->
+      <div style="background:color-mix(in srgb,var(--surface-soft) 92%,transparent); border:1px solid var(--line); border-radius:var(--radius-xl); padding:1rem; display:grid; gap:0.75rem;">
+        <div>
+          <p style="margin:0 0 2px; color:var(--accent-soft); font-size:0.72rem; font-weight:900; letter-spacing:0.12em; text-transform:uppercase;">Novo funcionário</p>
+          <p style="margin:0; color:var(--muted); font-size:0.82rem;">Cadastre o operador com senha inicial e o perfil desejado.</p>
+        </div>
+        <div class="func-form-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:0.65rem;">
+          <label style="display:grid; gap:0.4rem;">
+            <span style="color:var(--muted); font-size:0.82rem; font-weight:600;">Nome completo</span>
+            <input class="pdv-input" type="text" value="{{ newName }}" onInput="{{ setNewName }}" placeholder="Nome do funcionário">
+          </label>
+          <label style="display:grid; gap:0.4rem;">
+            <span style="color:var(--muted); font-size:0.82rem; font-weight:600;">E-mail de acesso</span>
+            <input class="pdv-input" type="email" value="{{ newEmail }}" onInput="{{ setNewEmail }}" placeholder="email@loja.com.br">
+          </label>
+          <label style="display:grid; gap:0.4rem;">
+            <span style="color:var(--muted); font-size:0.82rem; font-weight:600;">Senha inicial</span>
+            <input class="pdv-input" type="password" value="{{ newPwd }}" onInput="{{ setNewPwd }}" placeholder="Mín. 8 caracteres">
+          </label>
+          <label style="display:grid; gap:0.4rem;">
+            <span style="color:var(--muted); font-size:0.82rem; font-weight:600;">Perfil de acesso</span>
+            <select class="pdv-input" value="{{ newRole }}" onChange="{{ setNewRole }}">
+              <option value="ADMIN">Administrador</option>
+              <option value="MANAGER">Gerente</option>
+              <option value="CASHIER">Funcionário</option>
+              <option value="STOCKIST">Estoquista</option>
+            </select>
+          </label>
+        </div>
+        <label style="display:grid; gap:0.4rem;">
+          <span style="color:var(--muted); font-size:0.82rem; font-weight:600;">Imagem do operador (URL — opcional)</span>
+          <input class="pdv-input" type="url" value="{{ newImage }}" onInput="{{ setNewImage }}" placeholder="https://exemplo.com/avatar.png">
+        </label>
+        <div style="display:flex; justify-content:flex-end;">
+          <button onClick="{{ createOperator }}" class="pdv-btn pdv-btn--primary" style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.6rem 1.1rem;"><i data-lucide="user-plus" style="width:14px;height:14px;"></i> Cadastrar funcionário</button>
+        </div>
+      </div>
+
+      <!-- Operators list -->
+      <div style="display:grid; gap:0.45rem;">
+        <sc-for list="{{ operatorCards }}" as="op" hint-placeholder-count="3">
+          <div style="background:color-mix(in srgb,var(--surface-soft) 92%,transparent); border:1px solid var(--line); border-radius:var(--radius-lg); padding:0.75rem; display:grid; gap:0.55rem;">
+
+            <!-- View mode -->
+            <div class="{{ op.viewHiddenClass }}" style="display:flex; align-items:center; justify-content:space-between; gap:0.75rem; flex-wrap:wrap;">
+              <div style="display:flex; align-items:center; gap:0.65rem; min-width:0;">
+                <div style="width:2.6rem; height:2.6rem; border-radius:50%; background:linear-gradient(135deg,var(--button-bg),var(--accent-strong)); display:grid; place-items:center; font-size:1rem; font-weight:900; color:#fff; flex-shrink:0;">{{ op.initial }}</div>
+                <div style="min-width:0;">
+                  <div style="font-size:0.9rem; font-weight:800; color:var(--text);">{{ op.name }}</div>
+                  <div style="font-size:0.75rem; color:var(--muted);">{{ op.email }}</div>
+                </div>
+              </div>
+              <div style="display:flex; align-items:center; gap:0.5rem; flex-shrink:0;">
+                <span style="display:inline-flex; align-items:center; gap:0.35rem; background:color-mix(in srgb,var(--accent) 12%,transparent); border:1px solid color-mix(in srgb,var(--accent) 22%,transparent); border-radius:999px; color:var(--accent-soft); font-size:0.7rem; font-weight:900; padding:0.3rem 0.6rem;">{{ op.roleLabel }}</span>
+                <button onClick="{{ op.startEdit }}" class="pdv-btn pdv-btn--secondary pdv-btn--sm" style="display:inline-flex; align-items:center; gap:0.3rem;"><i data-lucide="pencil" style="width:12px;height:12px;"></i> Editar</button>
+              </div>
+            </div>
+
+            <!-- Edit mode -->
+            <div class="{{ op.editHiddenClass }}" style="display:grid; gap:0.55rem;">
+              <div class="func-form-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:0.55rem;">
+                <label style="display:grid; gap:0.35rem;">
+                  <span style="color:var(--muted); font-size:0.78rem; font-weight:600;">Nome</span>
+                  <input class="pdv-input" type="text" value="{{ op.editName }}" onInput="{{ op.setEditName }}">
+                </label>
+                <label style="display:grid; gap:0.35rem;">
+                  <span style="color:var(--muted); font-size:0.78rem; font-weight:600;">E-mail</span>
+                  <input class="pdv-input" type="email" value="{{ op.editEmail }}" onInput="{{ op.setEditEmail }}">
+                </label>
+                <label style="display:grid; gap:0.35rem;">
+                  <span style="color:var(--muted); font-size:0.78rem; font-weight:600;">Perfil</span>
+                  <select class="pdv-input" value="{{ op.editRole }}" onChange="{{ op.setEditRole }}">
+                    <option value="ADMIN">Administrador</option>
+                    <option value="MANAGER">Gerente</option>
+                    <option value="CASHIER">Funcionário</option>
+                    <option value="STOCKIST">Estoquista</option>
+                  </select>
+                </label>
+                <label style="display:grid; gap:0.35rem;">
+                  <span style="color:var(--muted); font-size:0.78rem; font-weight:600;">Imagem (URL)</span>
+                  <input class="pdv-input" type="url" value="{{ op.editImage }}" onInput="{{ op.setEditImage }}">
+                </label>
+              </div>
+              <div style="display:flex; gap:0.45rem; justify-content:flex-end;">
+                <button onClick="{{ op.cancelEdit }}" class="pdv-btn pdv-btn--ghost pdv-btn--sm">Cancelar</button>
+                <button onClick="{{ op.saveEdit }}" class="pdv-btn pdv-btn--primary pdv-btn--sm" style="display:inline-flex; align-items:center; gap:0.3rem;"><i data-lucide="save" style="width:12px;height:12px;"></i> Salvar</button>
+              </div>
+            </div>
+
+          </div>
+        </sc-for>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:860}}">
+class Component extends DCLogic {
+  state = {
+    statusMsg: "Funcionários carregados com sucesso.",
+    operators: [
+      { id: "op1", name: "Carlos Lima",    email: "carlos@loja.com.br",  role: "ADMIN",    image: "", editingId: null, editName: "", editEmail: "", editRole: "", editImage: "" },
+      { id: "op2", name: "Ana Paula",      email: "ana@loja.com.br",     role: "MANAGER",  image: "", editingId: null, editName: "", editEmail: "", editRole: "", editImage: "" },
+      { id: "op3", name: "João Ferreira",  email: "joao@loja.com.br",    role: "CASHIER",  image: "", editingId: null, editName: "", editEmail: "", editRole: "", editImage: "" },
+      { id: "op4", name: "Rita Estoque",   email: "rita@loja.com.br",    role: "STOCKIST", image: "", editingId: null, editName: "", editEmail: "", editRole: "", editImage: "" },
+    ],
+    editingId: null,
+    editDrafts: {},
+    newName: "", newEmail: "", newPwd: "", newRole: "CASHIER", newImage: "",
+  };
+
+  componentDidMount()  {
+    try {
+      const a = localStorage.getItem("pdv_accent");
+      if (a && a !== "mono") document.documentElement.dataset.accent = a;
+    } catch(e) {}
+    if (window.lucide) window.lucide.createIcons();
+  }
+  componentDidUpdate() { if (window.lucide) window.lucide.createIcons(); }
+
+  roleLabel(role) {
+    return { ADMIN: "Administrador", MANAGER: "Gerente", CASHIER: "Funcionário", STOCKIST: "Estoquista" }[role] || role;
+  }
+
+  renderVals() {
+    const s = this.state;
+    const user = (() => { try { return JSON.parse(localStorage.getItem("pdv_user") || "{}"); } catch(e) { return {}; } })();
+
+    const operatorCards = s.operators.map(op => {
+      const isEditing = s.editingId === op.id;
+      const draft = (s.editDrafts[op.id] || op);
+      return {
+        ...op,
+        initial:        op.name.charAt(0).toUpperCase(),
+        roleLabel:      this.roleLabel(op.role),
+        viewHiddenClass: isEditing ? "pdv-hidden" : "",
+        editHiddenClass: isEditing ? "" : "pdv-hidden",
+        editName:  draft.editName  || op.name,
+        editEmail: draft.editEmail || op.email,
+        editRole:  draft.editRole  || op.role,
+        editImage: draft.editImage || op.image,
+        startEdit: () => this.setState({ editingId: op.id, editDrafts: { ...s.editDrafts, [op.id]: { editName: op.name, editEmail: op.email, editRole: op.role, editImage: op.image } } }),
+        cancelEdit: () => this.setState({ editingId: null, statusMsg: "Edição cancelada." }),
+        saveEdit: () => {
+          const d = s.editDrafts[op.id] || {};
+          const updated = s.operators.map(o => o.id === op.id ? { ...o, name: d.editName||o.name, email: d.editEmail||o.email, role: d.editRole||o.role, image: d.editImage||o.image } : o);
+          this.setState({ operators: updated, editingId: null, statusMsg: `Funcionário ${d.editName||op.name} atualizado.` });
+        },
+        setEditName:  e => this.setState({ editDrafts: { ...s.editDrafts, [op.id]: { ...(s.editDrafts[op.id]||{}), editName: e.target.value } } }),
+        setEditEmail: e => this.setState({ editDrafts: { ...s.editDrafts, [op.id]: { ...(s.editDrafts[op.id]||{}), editEmail: e.target.value } } }),
+        setEditRole:  e => this.setState({ editDrafts: { ...s.editDrafts, [op.id]: { ...(s.editDrafts[op.id]||{}), editRole: e.target.value } } }),
+        setEditImage: e => this.setState({ editDrafts: { ...s.editDrafts, [op.id]: { ...(s.editDrafts[op.id]||{}), editImage: e.target.value } } }),
+      };
+    });
+
+    return {
+      statusMsg:        s.statusMsg,
+      currentEmail:     user.email || "Aguardando autenticação",
+      currentRoleLabel: this.roleLabel(user.role || "CASHIER"),
+      totalCount:       s.operators.length,
+      adminCount:       s.operators.filter(o => o.role === "ADMIN").length,
+      operatorCards,
+
+      refresh:     () => this.setState({ statusMsg: "Lista de funcionários atualizada." }),
+      goToPerfil:  () => { window.location.href = "../perfil/Perfil.dc.html"; },
+
+      newName:  s.newName,
+      newEmail: s.newEmail,
+      newPwd:   s.newPwd,
+      newRole:  s.newRole,
+      newImage: s.newImage,
+      setNewName:  e => this.setState({ newName:  e.target.value }),
+      setNewEmail: e => this.setState({ newEmail: e.target.value }),
+      setNewPwd:   e => this.setState({ newPwd:   e.target.value }),
+      setNewRole:  e => this.setState({ newRole:  e.target.value }),
+      setNewImage: e => this.setState({ newImage: e.target.value }),
+      createOperator: () => {
+        if (!s.newName || !s.newEmail || s.newPwd.length < 8) {
+          this.setState({ statusMsg: "Preencha nome, e-mail e uma senha de ao menos 8 caracteres." });
+          return;
+        }
+        const id = "op" + Date.now();
+        const op = { id, name: s.newName, email: s.newEmail, role: s.newRole, image: s.newImage, editingId: null, editName: "", editEmail: "", editRole: "", editImage: "" };
+        this.setState({ operators: [...s.operators, op], newName: "", newEmail: "", newPwd: "", newImage: "", newRole: "CASHIER", statusMsg: `Funcionário ${s.newName} cadastrado com sucesso.` });
+      },
+    };
+  }
+}
+</script>
+</body>
+</html>

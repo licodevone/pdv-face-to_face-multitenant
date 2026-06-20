@@ -1,0 +1,27 @@
+<!-- @dsCard group="Spacing" viewport="700x190" name="Radius scale" subtitle="Generous rounding — chips 0.6rem to login cards 1.6rem" -->
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 24px; font-family: var(--font-sans); }
+  .row { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; }
+  .r { display: grid; gap: 8px; justify-items: center; }
+  .box { width: 78px; height: 64px; background: var(--surface-soft); border: 1px solid var(--button-border);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 14%, transparent); }
+  .r b { color: var(--text); font-size: 0.72rem; font-weight: 800; }
+  .r span { color: var(--muted); font-size: 0.62rem; }
+</style>
+</head>
+<body>
+  <div class="row">
+    <div class="r"><div class="box" style="border-radius:var(--radius-sm)"></div><b>sm</b><span>0.6rem</span></div>
+    <div class="r"><div class="box" style="border-radius:var(--radius-md)"></div><b>md</b><span>0.95rem</span></div>
+    <div class="r"><div class="box" style="border-radius:var(--radius-lg)"></div><b>lg</b><span>1rem</span></div>
+    <div class="r"><div class="box" style="border-radius:var(--radius-xl)"></div><b>xl</b><span>1.35rem</span></div>
+    <div class="r"><div class="box" style="border-radius:var(--radius-2xl)"></div><b>2xl</b><span>1.6rem</span></div>
+    <div class="r"><div class="box" style="border-radius:var(--radius-pill)"></div><b>pill</b><span>999px</span></div>
+  </div>
+</body>
+</html>

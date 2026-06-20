@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Perfil do Operador" description="Tela de perfil: editar dados, alterar senha e acessar gestão de funcionários (ADMIN/MANAGER)" -->
+<helmet>
+  <script src="./ds-base.js"></script>
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <style>
+    @media (max-width: 900px) {
+      .perfil-layout { grid-template-columns: 1fr !important; }
+    }
+    @media (max-width: 600px) {
+      .perfil-form-grid { grid-template-columns: 1fr !important; }
+    }
+  </style>
+</helmet>
+
+<div style="min-height:100vh; display:grid; align-content:start; background:radial-gradient(circle at 12% 8%,rgba(96,165,250,0.18),transparent 28rem),linear-gradient(135deg,var(--background) 0%,var(--background-soft) 100%); font-family:var(--font-sans); color:var(--text); gap:0.75rem; padding:clamp(0.5rem,1vw,0.75rem);">
+
+  <!-- Topbar -->
+  <header style="align-items:center; background:linear-gradient(180deg,rgba(255,255,255,0.18) 0%,rgba(255,255,255,0.06) 100%),var(--panel-gradient); border:1px solid var(--button-border); border-radius:1.2rem; color:#f8fafc; display:flex; justify-content:space-between; gap:0.75rem; padding:0.65rem 0.8rem; box-shadow:0 0 0.8rem rgba(96,165,250,0.2),var(--shadow);">
+    <div style="display:flex; align-items:center; gap:0.75rem;">
+      <img src="../../assets/brand-logo.svg" alt="logo" style="height:3.2rem;width:3.2rem;filter:drop-shadow(0 10px 18px rgba(15,23,42,0.2));">
+      <div>
+        <p style="margin:0 0 2px; color:#fff; font-size:0.62rem; font-weight:900; letter-spacing:0.16em; text-transform:uppercase;">Gerenciamento de conta</p>
+        <h1 style="margin:0; font-size:clamp(1.1rem,2.5vw,1.85rem); letter-spacing:-0.05em; color:#f8fafc; line-height:1;">Seu Perfil</h1>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:0.55rem;">
+      <button onClick="{{ goToPdv }}" style="display:inline-flex; align-items:center; gap:0.4rem; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.18); border-radius:var(--radius-md); color:#fff; cursor:pointer; font-size:0.84rem; font-weight:700; padding:0.5rem 0.8rem; transition:background 0.18s ease;">← Voltar</button>
+      <button onClick="{{ toggleOpMenu }}" style="display:flex; align-items:center; gap:0.5rem; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.18); border-radius:var(--radius-lg); padding:0.4rem 0.65rem; cursor:pointer; color:#fff; min-width:12rem;">
+        <span style="height:2rem; width:2rem; border-radius:50%; display:grid; place-items:center; background:rgba(255,255,255,0.2); color:#fff; font-weight:900; font-size:0.78rem; flex-shrink:0;">{{ sessionInitials }}</span>
+        <span style="display:grid; gap:1px; flex:1; min-width:0;">
+          <small style="color:#e2e8f0; font-size:0.6rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase;">{{ sessionRoleLabel }}</small>
+          <strong style="color:#fff; font-size:0.84rem; line-height:1.05;">{{ sessionName }}</strong>
+        </span>
+        <i data-lucide="chevron-down" style="width:14px;height:14px;flex-shrink:0;"></i>
+      </button>
+
+      <!-- Operator dropdown -->
+      <div class="{{ opMenuHiddenClass }}" style="position:fixed; right:1rem; top:5rem; min-width:13rem; background:color-mix(in srgb,var(--surface) 96%,transparent); border:1px solid var(--line); border-radius:var(--radius-lg); box-shadow:var(--shadow); padding:0.3rem; z-index:50; display:grid; gap:0.15rem;">
+        <button onClick="{{ refreshFromMenu }}" style="display:flex; align-items:center; gap:0.55rem; background:transparent; border:0; border-radius:0.55rem; color:var(--text); cursor:pointer; font-weight:700; font-size:0.85rem; padding:0.5rem 0.6rem; text-align:left; width:100%;"><i data-lucide="refresh-cw" style="width:14px;height:14px;color:var(--muted);"></i> Atualizar</button>
+        <button onClick="{{ goToFuncionarios }}" class="{{ funcionariosHiddenClass }}" style="display:flex; align-items:center; gap:0.55rem; background:transparent; border:0; border-radius:0.55rem; color:var(--text); cursor:pointer; font-weight:700; font-size:0.85rem; padding:0.5rem 0.6rem; text-align:left; width:100%;"><i data-lucide="users" style="width:14px;height:14px;color:var(--muted);"></i> Funcionários</button>
+        <div style="height:1px; background:var(--line); margin:0.2rem 0.3rem;"></div>
+        <button onClick="{{ doLogout }}" style="display:flex; align-items:center; gap:0.55rem; background:transparent; border:0; border-radius:0.55rem; color:var(--danger); cursor:pointer; font-weight:700; font-size:0.85rem; padding:0.5rem 0.6rem; text-align:left; width:100%;"><i data-lucide="log-out" style="width:14px;height:14px;"></i> Sair</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Status strip -->
+  <div style="background:color-mix(in srgb,var(--surface) 92%,transparent); border:1px solid var(--line); border-radius:var(--radius-lg); padding:0.65rem 0.9rem;">
+    <p style="margin:0; font-size:0.84rem; color:var(--accent-soft); font-weight:600;">{{ statusMsg }}</p>
+  </div>
+
+  <!-- Main layout -->
+  <div class="perfil-layout" style="display:grid; gap:0.75rem; grid-template-columns:280px minmax(0,1fr); align-items:start;">
+
+    <!-- Sidebar -->
+    <aside style="background:color-mix(in srgb,var(--surface-soft) 92%,transparent); border:1px solid var(--line); border-radius:var(--radius-xl); padding:1rem; display:grid; gap:0.75rem;">
+      <div>
+        <p style="margin:0 0 2px; color:var(--accent-soft); font-size:0.72rem; font-weight:900; letter-spacing:0.12em; text-transform:uppercase;">Resumo da Conta</p>
+        <p style="margin:0; color:var(--muted); font-size:0.78rem;">Dados da sessão autenticada</p>
+      </div>
+      <div style="width:5rem; height:5rem; border-radius:50%; background:linear-gradient(135deg,var(--button-bg),var(--accent-strong)); display:grid; place-items:center; margin:0 auto; font-size:2rem; font-weight:900; color:#fff; box-shadow:0 0 1rem rgba(96,165,250,0.3);">{{ sessionInitials }}</div>
+      <div style="display:grid; gap:0.45rem;">
+        <sc-for list="{{ summaryRows }}" as="row" hint-placeholder-count="5">
+          <div style="display:flex; justify-content:space-between; gap:0.5rem; border-bottom:1px solid var(--line); padding-bottom:0.45rem;">
+            <strong style="font-size:0.78rem; color:var(--muted); font-weight:600;">{{ row.label }}</strong>
+            <span style="font-size:0.78rem; color:var(--text); font-weight:700; text-align:right;">{{ row.value }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </aside>
+
+    <!-- Main column -->
+    <div style="display:grid; gap:0.75rem;">
+
+      <!-- Edit profile form -->
+      <div style="background:color-mix(in srgb,var(--surface-soft) 92%,transparent); border:1px solid var(--line); border-radius:var(--radius-xl); padding:1rem; display:grid; gap:0.75rem;">
+        <div>
+          <p style="margin:0 0 2px; color:var(--accent-soft); font-size:0.72rem; font-weight:900; letter-spacing:0.12em; text-transform:uppercase;">Dados do cadastro</p>
+          <p style="margin:0; color:var(--muted); font-size:0.82rem;">Essas informações alimentam o topo do PDV e o cadastro do operador.</p>
+        </div>
+        <div class="perfil-form-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:0.65rem;">
+          <label style="display:grid; gap:0.4rem;">
+            <span style="color:var(--muted); font-size:0.82rem; font-weight:600;">Nome completo</span>
+            <input class="pdv-input" type="text" value="{{ draftName }}" onInput="{{ setName }}" placeholder="Seu nome completo">
+          </label>
+          <label style="display:grid; gap:0.4rem;">
+            <span style="color:var(--muted); font-size:0.82rem; font-weight:600;">E-mail de acesso</span>
+            <input class="pdv-input" type="email" value="{{ draftEmail }}" onInput="{{ setEmail }}" placeholder="seu@email.com">
+          </label>
+        </div>
+        <label style="display:grid; gap:0.4rem;">
+          <span style="color:var(--muted); font-size:0.82rem; font-weight:600;">Imagem do operador (URL)</span>
+          <input class="pdv-input" type="url" value="{{ draftImage }}" onInput="{{ setImage }}" placeholder="https://exemplo.com/avatar.png">
+        </label>
+        <label class="{{ roleEditHiddenClass }}" style="display:grid; gap:0.4rem;">
+          <span style="color:var(--muted); font-size:0.82rem; font-weight:600;">Perfil de acesso</span>
+          <select class="pdv-input" value="{{ draftRole }}" onChange="{{ setRole }}">
+            <option value="ADMIN">Administrador</option>
+            <option value="MANAGER">Gerente</option>
+            <option value="CASHIER">Funcionário</option>
+            <option value="STOCKIST">Estoquista</option>
+          </select>
+        </label>
+        <div style="display:flex; gap:0.5rem; justify-content:flex-end;">
+          <button onClick="{{ restoreDraft }}" class="pdv-btn pdv-btn--ghost pdv-btn--sm">Restaurar</button>
+          <button onClick="{{ saveProfile }}" class="pdv-btn pdv-btn--primary" style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.6rem 1rem;"><i data-lucide="save" style="width:14px;height:14px;"></i> {{ saveProfileLabel }}</button>
+        </div>
+      </div>
+
+      <!-- Change password form -->
+      <div style="background:color-mix(in srgb,var(--surface-soft) 92%,transparent); border:1px solid var(--line); border-radius:var(--radius-xl); padding:1rem; display:grid; gap:0.75rem;">
+        <div>
+          <p style="margin:0 0 2px; color:var(--accent-soft); font-size:0.72rem; font-weight:900; letter-spacing:0.12em; text-transform:uppercase;">Alterar senha</p>
+          <p style="margin:0; color:var(--muted); font-size:0.82rem;">Mínimo de 8 caracteres. A nova senha precisa ser confirmada.</p>
+        </div>
+        <div class="perfil-form-grid" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:0.65rem;">
+          <label style="display:grid; gap:0.4rem;">
+            <span style="color:var(--muted); font-size:0.82rem; font-weight:600;">Senha atual</span>
+            <input class="pdv-input" type="password" value="{{ pwdCurrent }}" onInput="{{ setPwdCurrent }}" placeholder="••••••••">
+          </label>
+          <label style="display:grid; gap:0.4rem;">
+            <span style="color:var(--muted); font-size:0.82rem; font-weight:600;">Nova senha</span>
+            <input class="pdv-input" type="password" value="{{ pwdNew }}" onInput="{{ setPwdNew }}" placeholder="••••••••">
+          </label>
+          <label style="display:grid; gap:0.4rem;">
+            <span style="color:var(--muted); font-size:0.82rem; font-weight:600;">Confirmar nova senha</span>
+            <input class="pdv-input" type="password" value="{{ pwdConfirm }}" onInput="{{ setPwdConfirm }}" placeholder="••••••••">
+          </label>
+        </div>
+        <div style="display:flex; align-items:center; gap:0.55rem;">
+          <label style="display:flex; align-items:center; gap:0.45rem; cursor:pointer; font-size:0.82rem; color:var(--muted); font-weight:600;">
+            <input type="checkbox" checked="{{ revokeOthers }}" onChange="{{ setRevokeOthers }}" style="width:1rem; height:1rem; accent-color:var(--accent);"> Revogar outras sessões ao salvar
+          </label>
+        </div>
+        <div style="display:flex; gap:0.5rem; justify-content:flex-end;">
+          <button onClick="{{ restorePassword }}" class="pdv-btn pdv-btn--ghost pdv-btn--sm">Limpar</button>
+          <button onClick="{{ savePassword }}" class="pdv-btn pdv-btn--primary" style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.6rem 1rem;"><i data-lucide="lock" style="width:14px;height:14px;"></i> {{ savePwdLabel }}</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:860}}">
+class Component extends DCLogic {
+  state = {
+    opMenuOpen: false,
+    statusMsg: "Dados do operador carregados.",
+    draftName: "Maria Souza",
+    draftEmail: "maria@loja.com.br",
+    draftImage: "",
+    draftRole: "CASHIER",
+    pwdCurrent: "",
+    pwdNew: "",
+    pwdConfirm: "",
+    revokeOthers: true,
+    isSavingProfile: false,
+    isSavingPwd: false,
+  };
+
+  componentDidMount() {
+    try {
+      const a = localStorage.getItem("pdv_accent");
+      if (a && a !== "mono") document.documentElement.dataset.accent = a;
+    } catch(e) {}
+    try {
+      const raw = localStorage.getItem("pdv_user");
+      if (raw) {
+        const u = JSON.parse(raw);
+        this.setState({ draftName: u.name || "", draftEmail: u.email || "", draftRole: u.role || "CASHIER" });
+      }
+    } catch(e) {}
+    if (window.lucide) window.lucide.createIcons();
+  }
+  componentDidUpdate() { if (window.lucide) window.lucide.createIcons(); }
+
+  roleLabel(role) {
+    return { SYSTEM_ADMIN: "Admin do sistema", ADMIN: "Administrador", MANAGER: "Gerente", CASHIER: "Funcionário", STOCKIST: "Estoquista" }[role] || role;
+  }
+
+  renderVals() {
+    const s = this.state;
+    const user = (() => { try { return JSON.parse(localStorage.getItem("pdv_user") || "{}"); } catch(e) { return {}; } })();
+    const role = user.role || s.draftRole;
+    const name = user.name || s.draftName || "Operador";
+    const canEditRole  = role === "ADMIN";
+    // Somente ADMIN da loja e SYSTEM_ADMIN acessam o cadastro de funcionários
+    const hasManagerAccess = role === "ADMIN" || role === "SYSTEM_ADMIN";
+
+    return {
+      sessionInitials: name.split(" ").slice(0,2).map(w => w[0]).join("").toUpperCase(),
+      sessionName:     name,
+      sessionRoleLabel: this.roleLabel(role),
+
+      opMenuHiddenClass:      s.opMenuOpen ? "" : "pdv-hidden",
+      funcionariosHiddenClass: hasManagerAccess ? "" : "pdv-hidden",
+      roleEditHiddenClass:    canEditRole ? "" : "pdv-hidden",
+
+      toggleOpMenu:    () => this.setState(st => ({ opMenuOpen: !st.opMenuOpen })),
+      refreshFromMenu: () => this.setState({ opMenuOpen: false, statusMsg: "Perfil recarregado." }),
+      goToFuncionarios:() => { this.setState({ opMenuOpen: false }); window.location.href = "../funcionarios/Funcionarios.dc.html"; },
+      goToPdv:         () => { window.location.href = "../pdv/Pdv.dc.html"; },
+      doLogout:        () => { localStorage.removeItem("pdv_user"); window.location.href = "../login/Login.dc.html"; },
+
+      summaryRows: [
+        { label: "Nome",            value: name },
+        { label: "Perfil",          value: this.roleLabel(role) },
+        { label: "Acesso gerencial",value: hasManagerAccess ? "Liberado" : "Bloqueado" },
+        { label: "Cadastrado",      value: "15/06/2026 09:00" },
+        { label: "Atualizado",      value: "15/06/2026 14:30" },
+      ],
+
+      draftName:  s.draftName,
+      draftEmail: s.draftEmail,
+      draftImage: s.draftImage,
+      draftRole:  s.draftRole,
+      setName:    e => this.setState({ draftName: e.target.value }),
+      setEmail:   e => this.setState({ draftEmail: e.target.value }),
+      setImage:   e => this.setState({ draftImage: e.target.value }),
+      setRole:    e => this.setState({ draftRole: e.target.value }),
+      restoreDraft: () => this.setState({ draftName: name, draftEmail: user.email || "", draftRole: role, draftImage: "", statusMsg: "Alterações restauradas." }),
+      saveProfile: () => {
+        const u = { ...(user || {}), name: s.draftName, email: s.draftEmail, role: s.draftRole };
+        localStorage.setItem("pdv_user", JSON.stringify(u));
+        this.setState({ statusMsg: "Perfil atualizado com sucesso." });
+      },
+      saveProfileLabel: s.isSavingProfile ? "Salvando..." : "Salvar perfil",
+
+      pwdCurrent:   s.pwdCurrent,
+      pwdNew:       s.pwdNew,
+      pwdConfirm:   s.pwdConfirm,
+      revokeOthers: s.revokeOthers,
+      setPwdCurrent:  e => this.setState({ pwdCurrent: e.target.value }),
+      setPwdNew:      e => this.setState({ pwdNew: e.target.value }),
+      setPwdConfirm:  e => this.setState({ pwdConfirm: e.target.value }),
+      setRevokeOthers:e => this.setState({ revokeOthers: e.target.checked }),
+      restorePassword: () => this.setState({ pwdCurrent: "", pwdNew: "", pwdConfirm: "", revokeOthers: true, statusMsg: "Formulário de senha limpo." }),
+      savePassword: () => {
+        if (s.pwdNew.length < 8) { this.setState({ statusMsg: "A nova senha precisa ter pelo menos 8 caracteres." }); return; }
+        if (s.pwdNew !== s.pwdConfirm) { this.setState({ statusMsg: "A confirmação da senha não confere." }); return; }
+        this.setState({ pwdCurrent: "", pwdNew: "", pwdConfirm: "", statusMsg: "Senha atualizada com sucesso." });
+      },
+      savePwdLabel: s.isSavingPwd ? "Salvando..." : "Alterar senha",
+
+      statusMsg: s.statusMsg,
+    };
+  }
+}
+</script>
+</body>
+</html>

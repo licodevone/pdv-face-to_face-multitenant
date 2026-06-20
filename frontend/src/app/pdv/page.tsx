@@ -252,6 +252,7 @@ interface DashboardVisibilitySettings {
   hideSummaryRowGrid: boolean;
   hideCashOpenCard: boolean;
   hideCatalogHeading: boolean;
+  hideEstoqueBaixo: boolean;
   hideCategoryToolbar: boolean;
   hideCatalogSearchField: boolean;
   hideCashWithdrawalCard: boolean;
@@ -295,6 +296,7 @@ const DEFAULT_DASHBOARD_VISIBILITY: DashboardVisibilitySettings = {
   hideSummaryRowGrid: false,
   hideCashOpenCard: false,
   hideCatalogHeading: false,
+  hideEstoqueBaixo: false,
   hideCategoryToolbar: false,
   hideCatalogSearchField: false,
   hideCashWithdrawalCard: false,
@@ -1056,6 +1058,7 @@ const getInitialDashboardVisibility = (): DashboardVisibilitySettings => {
       hideSummaryRowGrid: Boolean(parsedVisibility.hideSummaryRowGrid),
       hideCashOpenCard: Boolean(parsedVisibility.hideCashOpenCard),
       hideCatalogHeading: Boolean(parsedVisibility.hideCatalogHeading),
+      hideEstoqueBaixo: Boolean(parsedVisibility.hideEstoqueBaixo),
       hideCategoryToolbar: Boolean(parsedVisibility.hideCategoryToolbar),
       hideCatalogSearchField: Boolean(parsedVisibility.hideCatalogSearchField),
       hideCashWithdrawalCard:
@@ -1305,6 +1308,7 @@ export default function HomePage() {
   const [shouldShowCashEntryModal, setShouldShowCashEntryModal] = useState(false);
   const [cashWithdrawalAmount, setCashWithdrawalAmount] = useState("");
   const [cashWithdrawalNote, setCashWithdrawalNote] = useState("");
+  const [cashMovementModalType, setCashMovementModalType] = useState<"SUPPLY" | "WITHDRAWAL" | null>(null);
   const [discount, setDiscount] = useState("0");
   const [message, setMessage] = useState("Informe suas credenciais para acessar o PDV.");
   const [toastMessage, setToastMessage] = useState("");
@@ -1537,7 +1541,7 @@ export default function HomePage() {
       label: "Sessao do caixa",
       value: cashSession ? "Caixa aberto" : "Caixa bloqueado",
       note: cashSession
-        ? `Desde ${formatDateTime(cashSession.openedAt)}`
+        ? `Desde ${formatDateTime(cashSession.openedAt)} · ${terminalId}`
         : "Informe o valor de entrada do caixa no modal para iniciar vendas",
       tone: cashSession ? ("success" as const) : ("accent" as const),
     },
@@ -1923,10 +1927,10 @@ export default function HomePage() {
     }
   };
 
-  const handleRegisterCashWithdrawal = async (event: React.SubmitEvent<HTMLFormElement>) => {
+  const handleRegisterCashMovement = async (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!cashSession) {
+    if (!cashSession || !cashMovementModalType) {
       setMessage(getCashOperationBlockedMessage());
       return;
     }
@@ -1934,7 +1938,7 @@ export default function HomePage() {
     const amountInCents = parseMoneyToCents(cashWithdrawalAmount);
 
     if (amountInCents <= 0) {
-      setMessage("Informe um valor valido para a sangria.");
+      setMessage(cashMovementModalType === "SUPPLY" ? "Informe um valor valido para inserir." : "Informe um valor valido para retirar.");
       return;
     }
 
@@ -1942,15 +1946,17 @@ export default function HomePage() {
 
     try {
       await registerCashMovement(cashSession.id, {
-        type: "WITHDRAWAL",
+        type: cashMovementModalType,
         amountInCents,
         note: cashWithdrawalNote.trim() || undefined,
       });
       setCashWithdrawalAmount("");
       setCashWithdrawalNote("");
-      await loadDashboard("Sangria registrada com sucesso.", { showCashEntryModal: false });
+      setCashMovementModalType(null);
+      const successMessage = cashMovementModalType === "SUPPLY" ? "Suprimento registrado com sucesso." : "Sangria registrada com sucesso.";
+      await loadDashboard(successMessage, { showCashEntryModal: false });
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Erro ao registrar sangria.");
+      setMessage(error instanceof Error ? error.message : "Erro ao registrar movimento de caixa.");
       setIsLoading(false);
     }
   };
@@ -4443,6 +4449,71 @@ export default function HomePage() {
     );
   };
 
+  const renderCashMovementModal = () => {
+    if (!cashMovementModalType) return null;
+
+    const isSupply = cashMovementModalType === "SUPPLY";
+
+    return (
+      <div className="cash-lock-overlay" role="presentation">
+        <div
+          className="modal-window cash-opening-modal cash-lock-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="cash-movement-title"
+        >
+          <header className="modal-header cash-opening-modal-header">
+            <div>
+              <p className="eyebrow">{isSupply ? "Suprimento de caixa" : "Sangria de caixa"}</p>
+            </div>
+          </header>
+
+          <div className="modal-body">
+            <form className="modal-form-grid" onSubmit={(event) => void handleRegisterCashMovement(event)}>
+              <label>
+                {isSupply ? "Valor a inserir" : "Valor a retirar"}
+                <input
+                  autoFocus
+                  inputMode="numeric"
+                  placeholder="0,00"
+                  required
+                  value={cashWithdrawalAmount}
+                  onChange={(event) => setCashWithdrawalAmount(formatMoneyInput(event.target.value))}
+                  disabled={isLoading}
+                />
+              </label>
+
+              <label>
+                Motivo (opcional)
+                <input
+                  value={cashWithdrawalNote}
+                  onChange={(event) => setCashWithdrawalNote(event.target.value)}
+                  placeholder={isSupply ? "Ex.: reforco de troco" : "Ex.: retirada para deposito"}
+                  maxLength={300}
+                  disabled={isLoading}
+                />
+              </label>
+
+              <div className="form-actions inline-actions">
+                <button
+                  className="secondary-button"
+                  type="button"
+                  disabled={isLoading}
+                  onClick={() => setCashMovementModalType(null)}
+                >
+                  Cancelar
+                </button>
+                <button className="primary-button" type="submit" disabled={isLoading}>
+                  {isSupply ? "Confirmar inserção" : "Confirmar retirada"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const operatorDisplayName = operatorProfile?.name.trim() || email;
   const _operatorNameWords = operatorDisplayName.trim().split(/\s+/);
   const _w0 = _operatorNameWords[0] ?? "";
@@ -4708,15 +4779,37 @@ export default function HomePage() {
 
           <CollapsibleDashboardSection
             className="catalog-heading"
-            collapsedLabel="Cabecalho do catalogo"
+            collapsedLabel="Sessao do Caixa"
             isCollapsed={dashboardVisibility.hideCatalogHeading}
             onToggle={() => toggleDashboardVisibility("hideCatalogHeading")}
           >
-            <div className="catalog-heading-title">
-              <h2>Catálogo</h2>
-              <p className="pdv-catalog-subtitle">Toque em um produto para adicionar ao carrinho.</p>
-            </div>
+            <MetricTile
+              label="Sessao do caixa"
+              value={cashSession ? "Caixa aberto" : "Caixa bloqueado"}
+              note={cashSession ? `Desde ${formatDateTime(cashSession.openedAt)} · ${terminalId}` : "Informe o valor de entrada do caixa no modal para iniciar vendas"}
+              tone={cashSession ? "success" : "accent"}
+            />
+            <MetricTile
+              label="Produtos ativos"
+              value={formatNumber(products.filter((p) => p.active).length)}
+              note={`${formatNumber(lowStockProducts.length)} com alerta de estoque`}
+              tone="neutral"
+            />
+            <MetricTile
+              label="Ticket medio"
+              value={formatMoney(financialReport?.averageTicketInCents ?? 0)}
+              note={`${formatNumber(financialReport?.salesCount ?? 0)} venda(s) no periodo`}
+              tone="success"
+            />
+          </CollapsibleDashboardSection>
 
+          <CollapsibleDashboardSection
+            className="catalog-heading"
+            collapsedLabel="Estoque Baixo"
+            isCollapsed={dashboardVisibility.hideEstoqueBaixo}
+            onToggle={() => toggleDashboardVisibility("hideEstoqueBaixo")}
+          >
+            <p className="pdv-catalog-subtitle">Toque em um produto para adicionar ao carrinho.</p>
             <div className="minimum-stock-panel">
               <div className="minimum-stock-list" aria-label="Produtos com estoque minimo ou zerado">
                 {lowStockProducts.length === 0 ? (
@@ -4733,25 +4826,12 @@ export default function HomePage() {
                 )}
               </div>
             </div>
-
-            <MetricTile
-              label="Produtos visiveis"
-              value={formatNumber(visibleProducts.length)}
-              note="Resultado da categoria e busca"
-              tone="accent"
-            />
-            <MetricTile
-              label="Total do carrinho"
-              value={formatMoney(totalInCents)}
-              note={`${formatNumber(cartItems.length)} item(ns)`}
-              tone="success"
-            />
           </CollapsibleDashboardSection>
 
           <div className="catalog-gap-heading-categories">
             <CollapsibleDashboardSection
               className="category-toolbar"
-              collapsedLabel="Categorias"
+              collapsedLabel="Menu de Categorias"
               isCollapsed={dashboardVisibility.hideCategoryToolbar}
               onToggle={() => toggleDashboardVisibility("hideCategoryToolbar")}
             >
@@ -4957,46 +5037,36 @@ export default function HomePage() {
             <CollapsibleDashboardSection
               as="section"
               className="side-card"
-              collapsedLabel="Sangria do caixa"
+              collapsedLabel="Inserir ou retirar valores"
               isCollapsed={dashboardVisibility.hideCashWithdrawalCard}
               onToggle={() => toggleDashboardVisibility("hideCashWithdrawalCard")}
             >
               <div className="side-card-header">
-                <h3>Sangria do caixa</h3>
+                <h3>Inserir ou retirar valores</h3>
               </div>
 
-              <form className="modal-form-grid" onSubmit={(event) => void handleRegisterCashWithdrawal(event)}>
-                <div className="form-columns two-columns-form">
-                  <label>
-                    Valor da sangria
-                    <input
-                      inputMode="numeric"
-                      placeholder="0,00"
-                      value={cashWithdrawalAmount}
-                      onChange={(event) => setCashWithdrawalAmount(formatMoneyInput(event.target.value))}
-                      disabled={isLoading || isCashOperationLocked}
-                    />
-                  </label>
+              <p className="cash-movement-description">
+                Registre entradas (suprimento) ou retiradas (sangria) de dinheiro no caixa.
+              </p>
 
-                  <label>
-                    Motivo
-                    <input
-                      value={cashWithdrawalNote}
-                      onChange={(event) => setCashWithdrawalNote(event.target.value)}
-                      placeholder="Ex.: retirada para troco externo"
-                      maxLength={300}
-                      disabled={isLoading || isCashOperationLocked}
-                    />
-                  </label>
-                </div>
-
-                <div className="form-actions">
-                  <small>O saldo projetado do caixa sera abatido automaticamente apos a sangria.</small>
-                  <button className="secondary-button" type="submit" disabled={isLoading || isCashOperationLocked}>
-                    Sangria
-                  </button>
-                </div>
-              </form>
+              <div className="cash-movement-actions">
+                <button
+                  className="secondary-button"
+                  type="button"
+                  disabled={isLoading || isCashOperationLocked}
+                  onClick={() => { setCashWithdrawalAmount(""); setCashWithdrawalNote(""); setCashMovementModalType("SUPPLY"); }}
+                >
+                  ↓ Inserir
+                </button>
+                <button
+                  className="secondary-button"
+                  type="button"
+                  disabled={isLoading || isCashOperationLocked}
+                  onClick={() => { setCashWithdrawalAmount(""); setCashWithdrawalNote(""); setCashMovementModalType("WITHDRAWAL"); }}
+                >
+                  ↑ Retirar
+                </button>
+              </div>
             </CollapsibleDashboardSection>
           ) : null}
 
@@ -5325,6 +5395,7 @@ export default function HomePage() {
       </footer>
 
       {renderCashLockScreen()}
+      {renderCashMovementModal()}
       {renderActiveModal()}
     </main>
   );

@@ -1,0 +1,377 @@
+<!-- @dsCard group="PDV App" viewport="1280x900" name="Frente de caixa" subtitle="Catalog + cart + checkout — the core POS screen" -->
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PDV Face Delivery — Frente de caixa</title>
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  body { margin: 0; }
+  .pdv-shell { display: grid; gap: 0.75rem; min-height: 100vh; padding: 0.85rem clamp(0.85rem, 3vw, 2.4rem); }
+
+  /* Topbar */
+  .pdv-topbar {
+    align-items: center; display: flex; justify-content: space-between; gap: 0.75rem;
+    border-radius: var(--radius-xl); border: 1px solid var(--button-border);
+    padding: 0.65rem 0.85rem; color: #f8fafc; position: relative;
+    background: linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 100%), var(--panel-gradient);
+    box-shadow: 0 0 0.8rem rgba(96,165,250,0.2), var(--shadow);
+  }
+  .topbar-brand { align-items: center; display: flex; gap: 0.75rem; }
+  .topbar-brand img { height: 52px; width: 52px; filter: drop-shadow(0 10px 18px rgba(15,23,42,0.2)); }
+  .topbar-brand h1 { font-size: 1.55rem; letter-spacing: -0.05em; margin: 0; color: #f8fafc; }
+  .topbar-brand .eyebrow { color: #fff; margin: 0 0 1px; text-shadow: 0 1px 2px rgba(15,23,42,0.45); }
+  .topbar-actions { align-items: center; display: flex; gap: 0.55rem; }
+  .op-menu {
+    align-items: center; display: flex; gap: 0.5rem; min-width: 13rem;
+    background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.18);
+    border-radius: var(--radius-lg); padding: 0.4rem 0.65rem; cursor: pointer;
+  }
+  .op-avatar { height: 2rem; width: 2rem; border-radius: 50%; display: grid; place-items: center;
+    background: rgba(255,255,255,0.2); color: #fff; font-weight: 900; font-size: 0.78rem; }
+  .op-copy { display: grid; gap: 1px; min-width: 0; }
+  .op-copy small { color: #e2e8f0; font-size: 0.6rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
+  .op-copy strong { color: #fff; font-size: 0.84rem; line-height: 1.05; }
+  .theme-toggle {
+    align-items: center; display: inline-flex; justify-content: center;
+    height: 2.5rem; min-width: 2.5rem; border-radius: var(--radius-md);
+    background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.18); color: #fff;
+  }
+  .theme-toggle:hover { background: rgba(255,255,255,0.2); }
+
+  /* Layout */
+  .pdv-layout { display: grid; gap: 0.75rem; grid-template-columns: minmax(0, 1.35fr) minmax(360px, 0.72fr); }
+  @media (max-width: 1000px) { .pdv-layout { grid-template-columns: 1fr; } }
+  .catalog-panel, .checkout-panel {
+    background: color-mix(in srgb, var(--surface) 92%, transparent);
+    border: 1px solid var(--line); border-radius: var(--radius-xl);
+    box-shadow: var(--shadow); padding: 0.9rem;
+  }
+  .catalog-panel { display: grid; gap: 0.8rem; align-content: start; }
+  .catalog-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.58rem; }
+  .catalog-head h2 { letter-spacing: -0.04em; margin: 0; font-size: 1.3rem; }
+  .catalog-head p { color: var(--muted); margin: 2px 0 0; font-size: 0.82rem; }
+  .chips-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.55rem; }
+  @media (max-width: 1280px) { .chips-row { grid-template-columns: repeat(3, 1fr); } }
+  .search-field {
+    background: color-mix(in srgb, var(--surface-soft) 92%, transparent);
+    border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0.6rem 0.7rem;
+    display: flex; align-items: center; gap: 0.6rem;
+  }
+  .search-field i { color: var(--muted); }
+  .search-field input { border: 0; background: transparent; padding: 0.2rem 0; box-shadow: none; }
+  .search-field input:focus { box-shadow: none; background: transparent; }
+  .product-grid {
+    display: grid; gap: 0.7rem; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    max-height: 60vh; overflow: auto; padding-bottom: 0.4rem; padding-right: 0.25rem;
+  }
+
+  /* Checkout */
+  .checkout-panel {
+    --surface: var(--checkout-panel-surface, #111827);
+    align-self: start; display: grid; gap: 0.65rem; position: sticky; top: 0.5rem;
+    background: var(--checkout-panel-bg);
+  }
+  .checkout-head { display: flex; align-items: center; justify-content: space-between; }
+  .checkout-head h2 { margin: 0; font-size: 1.2rem; letter-spacing: -0.04em; }
+  .cart-card {
+    background: var(--cart-panel-bg); border: 1px solid var(--cart-panel-line);
+    border-radius: var(--radius-lg); padding: 0.6rem; display: grid; gap: 0.4rem;
+    max-height: 17rem; overflow: hidden; grid-template-rows: auto minmax(0,1fr);
+  }
+  .cart-list { display: grid; gap: 0.3rem; overflow-y: auto; align-content: start; padding-right: 0.25rem; }
+  .cart-row {
+    display: grid; grid-template-columns: minmax(0,1fr) auto auto; gap: 0.55rem; align-items: center;
+    border-radius: var(--radius-sm); padding: 0.3rem 0.5rem; cursor: pointer;
+    background: var(--cart-row-zebra-odd); transition: background 0.18s ease;
+  }
+  .cart-row:nth-child(even) { background: var(--cart-row-zebra-even); }
+  .cart-row:hover { background: color-mix(in srgb, var(--danger) 14%, transparent); }
+  .cart-name { color: var(--text); font-weight: 700; font-size: 0.82rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .cart-qty { color: var(--muted); font-size: 0.74rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .cart-total { color: var(--text); font-weight: 800; font-variant-numeric: tabular-nums; min-width: 84px; text-align: right; }
+  .empty-cart { display: grid; justify-items: center; gap: 0.4rem; padding: 0.6rem; text-align: center; }
+  .empty-cart img { height: 4.6rem; width: auto; opacity: 0.9; }
+  .empty-cart span { color: var(--muted); font-size: 0.82rem; }
+
+  .pay-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 0.5rem; align-items: end; }
+  .pay-row .pdv-btn { height: 100%; }
+  .sale-total {
+    border-radius: var(--radius-lg); padding: 0.75rem 0.85rem; color: #fff;
+    background: var(--button-gradient-hover); border: 1px solid rgba(255,255,255,0.26);
+    box-shadow: var(--glow-soft); display: flex; align-items: center; justify-content: space-between;
+  }
+  .sale-total small { color: rgba(255,255,255,0.82); font-size: 0.72rem; text-transform: uppercase; font-weight: 800; letter-spacing: 0.04em; }
+  .sale-total strong { font-size: 2rem; letter-spacing: -0.05em; font-variant-numeric: tabular-nums; }
+
+  .app-toast {
+    position: fixed; left: 50%; top: 1rem; transform: translateX(-50%); z-index: 1000;
+    background: color-mix(in srgb, var(--success) 92%, #111827); color: #fff;
+    border: 1px solid rgba(255,255,255,0.28); border-radius: var(--radius-md);
+    padding: 0.8rem 1.1rem; font-weight: 900; font-size: 0.88rem; box-shadow: var(--shadow);
+  }
+
+  /* ===== Tweak: Densidade — reshapes the spatial feel ===== */
+  [data-density="compacto"] .pdv-shell { gap: 0.5rem; padding: 0.55rem clamp(0.55rem, 2vw, 1.4rem); }
+  [data-density="compacto"] .catalog-panel,
+  [data-density="compacto"] .checkout-panel { padding: 0.6rem; }
+  [data-density="compacto"] .catalog-panel { gap: 0.55rem; }
+  [data-density="compacto"] .catalog-metrics { gap: 0.4rem; }
+  [data-density="compacto"] .product-grid { grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 0.5rem; max-height: 64vh; }
+  [data-density="compacto"] .catalog-head h2 { font-size: 1.1rem; }
+  [data-density="compacto"] .topbar-brand img { height: 42px; width: 42px; }
+  [data-density="compacto"] .topbar-brand h1 { font-size: 1.25rem; }
+  [data-density="compacto"] .sale-total strong { font-size: 1.6rem; }
+
+  [data-density="confortavel"] .pdv-shell { gap: 1.15rem; padding: 1.2rem clamp(1.2rem, 4vw, 3rem); }
+  [data-density="confortavel"] .catalog-panel,
+  [data-density="confortavel"] .checkout-panel { padding: 1.35rem; }
+  [data-density="confortavel"] .catalog-panel { gap: 1.1rem; }
+  [data-density="confortavel"] .catalog-metrics { gap: 0.85rem; }
+  [data-density="confortavel"] .product-grid { grid-template-columns: repeat(auto-fill, minmax(184px, 1fr)); gap: 1rem; max-height: 58vh; }
+  [data-density="confortavel"] .catalog-head h2 { font-size: 1.5rem; }
+  [data-density="confortavel"] .topbar-brand img { height: 60px; width: 60px; }
+  [data-density="confortavel"] .topbar-brand h1 { font-size: 1.75rem; }
+  [data-density="confortavel"] .sale-total strong { font-size: 2.3rem; }
+
+  /* ===== Tweak: Chrome — vibrante (gradient + glow) vs plano (matte terminal) ===== */
+  [data-chrome="plano"] .pdv-topbar {
+    background: var(--surface-soft); box-shadow: none;
+    border-color: var(--line); color: var(--text);
+  }
+  [data-chrome="plano"] .pdv-topbar .topbar-brand h1,
+  [data-chrome="plano"] .pdv-topbar .topbar-brand .eyebrow { color: var(--text); text-shadow: none; }
+  [data-chrome="plano"] .op-menu,
+  [data-chrome="plano"] .theme-toggle {
+    background: var(--surface-muted); border-color: var(--line); color: var(--text);
+  }
+  [data-chrome="plano"] .op-avatar { background: var(--button-bg); }
+  [data-chrome="plano"] .op-copy small,
+  [data-chrome="plano"] .op-copy strong { color: var(--text); }
+  [data-chrome="plano"] .catalog-panel,
+  [data-chrome="plano"] .checkout-panel { box-shadow: none; }
+  [data-chrome="plano"] .sale-total {
+    background: var(--surface-muted); border: 1px solid var(--line);
+    box-shadow: none; color: var(--text);
+  }
+  [data-chrome="plano"] .sale-total small { color: var(--muted); }
+  [data-chrome="plano"] .sale-total strong { color: var(--accent); }
+</style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <script src="../../_ds_bundle.js"></script>
+  <script src="products.js"></script>
+  <script type="text/babel" src="tweaks-panel.jsx"></script>
+
+  <script type="text/babel">
+    const { useState, useEffect, useMemo } = React;
+    const { Button, ProductCard, CategoryChip, MetricTile, Input } = window.PDVFaceDeliveryDesignSystem_dfcaa0;
+    const { useTweaks, TweaksPanel, TweakSection, TweakRadio, TweakColor } = window;
+    const IMG = "../../assets/produtos/";
+    const brl = (c) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format((c || 0) / 100);
+
+    // hex swatch → data-accent palette name (see tokens/colors.css)
+    const ACCENT_BY_HEX = {
+      "#60a5fa": "blue", "#34d399": "emerald", "#a78bfa": "violet",
+      "#fbbf24": "amber", "#fb7185": "rose", "#2dd4bf": "teal",
+    };
+    const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+      "accent": "#60a5fa",
+      "density": "padrao",
+      "chrome": "vibrante"
+    }/*EDITMODE-END*/;
+
+    function Icon({ name, size = 18, color }) {
+      const ref = React.useRef(null);
+      useEffect(() => { if (ref.current && window.lucide) { ref.current.innerHTML = ""; const el = document.createElement("i"); el.setAttribute("data-lucide", name); ref.current.appendChild(el); window.lucide.createIcons({ attrs: { width: size, height: size, stroke: color || "currentColor" }, nameAttr: "data-lucide" }); } });
+      return <span ref={ref} style={{ display: "inline-flex" }} />;
+    }
+
+    function App() {
+      const products = window.PDV_PRODUCTS;
+      const cats = window.PDV_CATEGORIES;
+      const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+      const [theme, setTheme] = useState("dark");
+      const [cat, setCat] = useState("TODOS");
+      const [q, setQ] = useState("");
+      const [cart, setCart] = useState([]);
+      const [customer, setCustomer] = useState("");
+      const [toast, setToast] = useState("");
+
+      useEffect(() => { document.documentElement.dataset.theme = theme; }, [theme]);
+      // Apply expressive tweaks to the root element
+      useEffect(() => { document.documentElement.dataset.accent = ACCENT_BY_HEX[t.accent] || "blue"; }, [t.accent]);
+      useEffect(() => { document.documentElement.dataset.density = t.density; }, [t.density]);
+      useEffect(() => { document.documentElement.dataset.chrome = t.chrome; }, [t.chrome]);
+      useEffect(() => { if (!toast) return; const ti = setTimeout(() => setToast(""), 2600); return () => clearTimeout(ti); }, [toast]);
+
+      const visible = useMemo(() => products.filter((p) => {
+        const okCat = cat === "TODOS" || p.cat === cat;
+        const okQ = !q || p.name.toLowerCase().includes(q.toLowerCase());
+        return okCat && okQ;
+      }), [cat, q]);
+
+      const counts = useMemo(() => {
+        const m = { TODOS: products.length };
+        for (const p of products) m[p.cat] = (m[p.cat] || 0) + 1;
+        return m;
+      }, []);
+
+      const subtotal = cart.reduce((s, i) => s + i.priceInCents * i.qty, 0);
+      const lowCount = products.filter((p) => p.stockStatus !== "AVAILABLE").length;
+
+      const add = (p) => {
+        if (p.stockStatus === "OUT_OF_STOCK") { setToast("Produto esgotado"); return; }
+        setCart((c) => {
+          const ex = c.find((i) => i.id === p.id);
+          if (ex) return c.map((i) => i.id === p.id ? { ...i, qty: i.qty + 1 } : i);
+          return [...c, { id: p.id, name: p.name, priceInCents: p.priceInCents, qty: 1 }];
+        });
+      };
+      const remove = (id) => setCart((c) => c.filter((i) => i.id !== id));
+      const finalize = () => { if (!cart.length) return; setToast("Venda finalizada · " + brl(subtotal)); setCart([]); setCustomer(""); };
+
+      return (
+        <div className="pdv-shell">
+          <header className="pdv-topbar">
+            <div className="topbar-brand">
+              <img src="../../assets/brand-logo-white.svg" alt="logo" />
+              <div>
+                <p className="eyebrow">Multitenant · Loja Centro</p>
+                <h1>Face Delivery</h1>
+              </div>
+            </div>
+            <div className="topbar-actions">
+              <div className="op-menu">
+                <span className="op-avatar">MS</span>
+                <span className="op-copy">
+                  <small>Operador</small>
+                  <strong>Maria Souza</strong>
+                </span>
+                <Icon name="chevron-down" size={16} color="#fff" />
+              </div>
+              <button className="theme-toggle" onClick={() => setTheme((t) => t === "dark" ? "light" : "dark")} aria-label="Alternar tema">
+                <Icon name={theme === "dark" ? "sun-medium" : "moon-star"} size={18} color="#fff" />
+              </button>
+            </div>
+          </header>
+
+          <div className="pdv-layout">
+            <section className="catalog-panel">
+              <div className="catalog-metrics">
+                <MetricTile label="Sessão do caixa" value="Caixa aberto" note="Desde 08:14 · PDV-01" tone="accent" />
+                <MetricTile label="Produtos ativos" value={String(products.length)} note={lowCount + " com alerta de estoque"} />
+                <MetricTile label="Ticket médio" value="R$ 48,90" note="32 venda(s) no período" tone="success" />
+              </div>
+
+              <div className="catalog-head">
+                <h2>Catálogo</h2>
+                <p>Toque em um produto para adicionar ao carrinho.</p>
+              </div>
+
+              <div className="chips-row">
+                {cats.map((c) => (
+                  <CategoryChip key={c.id} label={c.label} count={counts[c.id] || 0}
+                    active={cat === c.id} onClick={() => setCat(c.id)}
+                    icon={<Icon name={c.icon} size={16} />} />
+                ))}
+              </div>
+
+              <div className="search-field">
+                <Icon name="search" size={16} />
+                <Input placeholder="Buscar por nome, SKU ou código de barras…" value={q} onChange={(e) => setQ(e.target.value)} />
+              </div>
+
+              <div className="product-grid">
+                {visible.map((p) => (
+                  <ProductCard key={p.id} name={p.name} priceInCents={p.priceInCents}
+                    imageUrl={IMG + p.img} stockStatus={p.stockStatus} unit={p.unit}
+                    onClick={() => add(p)} />
+                ))}
+              </div>
+            </section>
+
+            <aside className="checkout-panel">
+              <div className="checkout-head">
+                <h2>Carrinho</h2>
+                <span className="pdv-badge pdv-badge--neutral">{cart.reduce((s, i) => s + i.qty, 0)} itens</span>
+              </div>
+
+              <div className="cart-card">
+                <p className="eyebrow" style={{ margin: 0 }}>Itens da venda</p>
+                {cart.length === 0 ? (
+                  <div className="empty-cart">
+                    <img src="../../assets/empty-cart-image.png" alt="" />
+                    <span>Carrinho vazio. Adicione produtos do catálogo.</span>
+                  </div>
+                ) : (
+                  <div className="cart-list">
+                    {cart.map((i) => (
+                      <div key={i.id} className="cart-row" onClick={() => remove(i.id)} title="Remover">
+                        <span className="cart-name">{i.name}</span>
+                        <span className="cart-qty">{i.qty}×</span>
+                        <span className="cart-total">{brl(i.priceInCents * i.qty)}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <Input label="Cliente (CPF / fidelidade)" placeholder="Consumidor não identificado"
+                value={customer} onChange={(e) => setCustomer(e.target.value)} />
+
+              <div className="pay-row">
+                <label className="pdv-field"><span>Pagamento</span>
+                  <select className="pdv-select" defaultValue="CASH">
+                    <option value="CASH">Dinheiro</option>
+                    <option value="PIX">Pix</option>
+                    <option value="CARD">Cartão TEF</option>
+                    <option value="STORE_CREDIT">Fiado</option>
+                  </select>
+                </label>
+                <Input label="Valor recebido" placeholder="0,00" inputMode="numeric" />
+                <Button variant="secondary" icon={<Icon name="plus" size={16} />}>Add</Button>
+              </div>
+
+              <div className="sale-total">
+                <small>Total a pagar</small>
+                <strong>{brl(subtotal)}</strong>
+              </div>
+
+              <Button variant="primary" block size="lg" disabled={cart.length === 0}
+                icon={<Icon name="check-check" size={18} color="#fff" />} onClick={finalize}>
+                Finalizar venda
+              </Button>
+            </aside>
+          </div>
+
+          {toast ? <div className="app-toast">{toast}</div> : null}
+
+          <TweaksPanel>
+            <TweakSection label="Cor" />
+            <TweakColor label="Acento" value={t.accent}
+              options={["#60a5fa", "#34d399", "#a78bfa", "#fbbf24", "#fb7185", "#2dd4bf"]}
+              onChange={(v) => setTweak("accent", v)} />
+            <TweakSection label="Forma" />
+            <TweakRadio label="Densidade" value={t.density}
+              options={[{ value: "compacto", label: "Compacto" }, { value: "padrao", label: "Padrão" }, { value: "confortavel", label: "Amplo" }]}
+              onChange={(v) => setTweak("density", v)} />
+            <TweakRadio label="Chrome" value={t.chrome}
+              options={[{ value: "vibrante", label: "Vibrante" }, { value: "plano", label: "Plano" }]}
+              onChange={(v) => setTweak("chrome", v)} />
+          </TweaksPanel>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>

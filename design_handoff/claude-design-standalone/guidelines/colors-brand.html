@@ -1,0 +1,26 @@
+<!-- @dsCard group="Colors" viewport="700x180" name="Brand blue ramp" subtitle="Primary accent — the single hue the whole UI is built on" -->
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 22px; }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .sw { flex: 1; min-width: 120px; border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--line); }
+  .chip { height: 64px; }
+  .meta { padding: 8px 10px; background: var(--surface); }
+  .meta b { display: block; color: var(--text); font-size: 0.78rem; font-weight: 800; }
+  .meta span { color: var(--muted); font-size: 0.68rem; font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+  <div class="row">
+    <div class="sw"><div class="chip" style="background:var(--accent-soft)"></div><div class="meta"><b>accent-soft</b><span>#93c5fd</span></div></div>
+    <div class="sw"><div class="chip" style="background:var(--accent)"></div><div class="meta"><b>accent</b><span>#60a5fa</span></div></div>
+    <div class="sw"><div class="chip" style="background:var(--accent-strong)"></div><div class="meta"><b>accent-strong</b><span>#3b82f6</span></div></div>
+    <div class="sw"><div class="chip" style="background:var(--button-bg)"></div><div class="meta"><b>button-bg</b><span>#2563eb</span></div></div>
+    <div class="sw"><div class="chip" style="background:var(--button-bg-strong)"></div><div class="meta"><b>button-bg-strong</b><span>#1d4ed8</span></div></div>
+  </div>
+</body>
+</html>
