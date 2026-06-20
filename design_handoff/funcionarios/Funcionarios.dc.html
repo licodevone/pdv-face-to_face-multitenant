@@ -185,7 +185,13 @@ class Component extends DCLogic {
     newName: "", newEmail: "", newPwd: "", newRole: "CASHIER", newImage: "",
   };
 
-  componentDidMount()  { if (window.lucide) window.lucide.createIcons(); }
+  componentDidMount()  {
+    try {
+      const a = localStorage.getItem("pdv_accent");
+      if (a && a !== "mono") document.documentElement.dataset.accent = a;
+    } catch(e) {}
+    if (window.lucide) window.lucide.createIcons();
+  }
   componentDidUpdate() { if (window.lucide) window.lucide.createIcons(); }
 
   roleLabel(role) {

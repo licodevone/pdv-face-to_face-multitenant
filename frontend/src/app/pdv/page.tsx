@@ -3,29 +3,35 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
+  ArrowDownToLine,
+  ArrowUpFromLine,
   BadgeDollarSign,
   Blocks,
   CakeSlice,
   ChartColumn,
   ChevronDown,
+  ChevronUp,
   ClipboardList,
   CreditCard,
   FileText,
   GlassWater,
   LayoutDashboard,
+  LogOut,
   Menu,
   MonitorCog,
-  MoonStar,
   Package,
+  Palette,
   PawPrint,
   Printer,
+  RefreshCw,
   Scale,
   Settings,
+  ShieldCheck,
   ShoppingBag,
   ShoppingBasket,
   Sparkles,
   SprayCan,
-  SunMedium,
+  TriangleAlert,
   Truck,
   UserCog,
   UsersRound,
@@ -70,7 +76,6 @@ import {
   signIn,
   signOut,
   updateCategory,
-  updateCashSessionOpeningAmount,
   updateProduct,
 } from "@/lib/api";
 import {
@@ -236,15 +241,6 @@ interface MetricTileProps {
   tone?: "neutral" | "success" | "accent";
 }
 
-interface CollapsibleDashboardSectionProps {
-  as?: "div" | "section";
-  className: string;
-  collapsedLabel: string;
-  isCollapsed: boolean;
-  onToggle: () => void;
-  toggleClassName?: string;
-  children: ReactNode;
-}
 
 type ThemeMode = "dark" | "light";
 
@@ -266,6 +262,9 @@ const moneyFormatter = new Intl.NumberFormat("pt-BR", {
 });
 
 const THEME_STORAGE_KEY = "pdv-face-to-face-theme";
+const ACCENT_STORAGE_KEY = "pdv_accent";
+const VALID_ACCENTS = ["mono", "blue", "emerald", "violet", "amber", "rose", "cyan", "orange", "fuchsia", "teal"] as const;
+type AccentPalette = (typeof VALID_ACCENTS)[number];
 const DASHBOARD_VISIBILITY_STORAGE_KEY = "pdv-face-to-face-dashboard-visibility";
 const BOOTSTRAP_SESSION_TIMEOUT_MS = 8_000;
 const CART_STOCK_BLOCKED_MESSAGE = "Modifique a quantidade no carrinho";
@@ -799,32 +798,6 @@ const parsePercentage = (value: string) => {
   return Math.min(Math.max(parsedValue, 0), 100);
 };
 
-const formatPercentageInput = (value: string) => {
-  const normalizedValue = value.replace(/\./g, ",").replace(/[^\d,]/g, "");
-
-  if (!normalizedValue) {
-    return "";
-  }
-
-  const [integerRaw = "", ...decimalParts] = normalizedValue.split(",");
-  const integerDigits = digitsOnly(integerRaw).slice(0, 3);
-  const normalizedInteger = integerDigits.replace(/^0+(?=\d)/, "");
-  const integerPortion =
-    normalizedInteger || (normalizedValue.startsWith(",") ? "0" : integerDigits);
-  const decimalDigits = digitsOnly(decimalParts.join("")).slice(0, 2);
-  const integerValue = integerPortion ? Number(integerPortion) : 0;
-
-  if (integerValue >= 100) {
-    return normalizedValue.includes(",") ? "100,00" : "100";
-  }
-
-  if (normalizedValue.includes(",")) {
-    return `${integerPortion || "0"},${decimalDigits}`;
-  }
-
-  return integerPortion;
-};
-
 const formatCpfInput = (value: string) => {
   const normalizedDigits = digitsOnly(value).slice(0, 11);
 
@@ -892,12 +865,6 @@ const formatPhoneInput = (value: string) => {
 
   return `(${areaCode}) ${number.slice(0, 5)}-${number.slice(5)}`;
 };
-
-const formatCartQuantity = (product: Product, quantity: number) =>
-  quantity.toLocaleString("pt-BR", {
-    maximumFractionDigits: product.unit === "KG" ? 3 : 0,
-    minimumFractionDigits: 0,
-  });
 
 const sortCategories = (items: Category[]) =>
   [...items].sort((left, right) => left.path.localeCompare(right.path, "pt-BR"));
@@ -1035,6 +1002,12 @@ const getInitialTheme = (): ThemeMode => {
   }
 
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+};
+
+const getInitialAccent = (): AccentPalette => {
+  if (typeof window === "undefined") return "mono";
+  const stored = window.localStorage.getItem(ACCENT_STORAGE_KEY);
+  return (VALID_ACCENTS as readonly string[]).includes(stored ?? "") ? (stored as AccentPalette) : "mono";
 };
 
 const getInitialDashboardVisibility = (): DashboardVisibilitySettings => {
@@ -1223,58 +1196,10 @@ function MetricTile({ label, value, note, tone = "neutral" }: MetricTileProps) {
   );
 }
 
-function CollapsibleDashboardSection({
-  as: Component = "div",
-  className,
-  collapsedLabel,
-  isCollapsed,
-  onToggle,
-  toggleClassName,
-  children,
-}: CollapsibleDashboardSectionProps) {
-  if (isCollapsed) {
-    return (
-      <div className="dashboard-collapsed-block">
-        <button
-          className={`dashboard-collapse-toggle is-inline ${toggleClassName ?? ""}`.trim()}
-          type="button"
-          onClick={onToggle}
-          aria-expanded="false"
-          aria-label={collapsedLabel}
-          title={collapsedLabel}
-        >
-          <ChevronDown className="dashboard-collapse-icon" aria-hidden="true" />
-        </button>
-        <span className="dashboard-collapsed-label">{collapsedLabel}</span>
-      </div>
-    );
-  }
-
-  return (
-    <div className="dashboard-collapsible-inline">
-      <button
-        className={`dashboard-collapse-toggle is-inline ${toggleClassName ?? ""}`.trim()}
-        type="button"
-        onClick={onToggle}
-        aria-expanded="true"
-        aria-label={collapsedLabel}
-        title={collapsedLabel}
-      >
-        <ChevronDown className="dashboard-collapse-icon is-open" aria-hidden="true" />
-      </button>
-      <Component
-        className={`${className} dashboard-collapsible-block`}
-      >
-        {children}
-      </Component>
-    </div>
-  );
-}
-
 export default function HomePage() {
   const router = useRouter();
   const [themeMode, setThemeMode] = useState<ThemeMode>(getInitialTheme);
-  const [dashboardVisibility, setDashboardVisibility] = useState<DashboardVisibilitySettings>(
+  const [dashboardVisibility] = useState<DashboardVisibilitySettings>(
     getInitialDashboardVisibility,
   );
   const [email, setEmail] = useState("");
@@ -1303,8 +1228,6 @@ export default function HomePage() {
   const [payments, setPayments] = useState<PaymentInput[]>([]);
   const [openingAmount, setOpeningAmount] = useState("");
   const [shouldShowCashEntryModal, setShouldShowCashEntryModal] = useState(false);
-  const [cashWithdrawalAmount, setCashWithdrawalAmount] = useState("");
-  const [cashWithdrawalNote, setCashWithdrawalNote] = useState("");
   const [discount, setDiscount] = useState("0");
   const [message, setMessage] = useState("Informe suas credenciais para acessar o PDV.");
   const [toastMessage, setToastMessage] = useState("");
@@ -1312,6 +1235,15 @@ export default function HomePage() {
   const [isBootstrappingSession, setIsBootstrappingSession] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [activeModal, setActiveModal] = useState<ManagerView | null>(null);
+  const [isOpMenuOpen, setIsOpMenuOpen] = useState(false);
+  const [accentPalette, setAccentPalette] = useState<AccentPalette>(getInitialAccent);
+  const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+  const [cashMoveOpen, setCashMoveOpen] = useState(false);
+  const [cashMoveType, setCashMoveType] = useState<"in" | "out">("out");
+  const [cashMoveValor, setCashMoveValor] = useState("");
+  const [cashMoveMotivo, setCashMoveMotivo] = useState("");
+  const [collapsedLeft, setCollapsedLeft] = useState({ metrics: false, catalogo: false, categorias: false, busca: false });
+  const [collapsed, setCollapsed] = useState({ resumo: false, caixa: false, sangria: false, cliente: false });
   const [isCreatePanelOpen, setIsCreatePanelOpen] = useState(false);
   const [newProduct, setNewProduct] = useState(createEmptyProductDraft);
   const [newCategory, setNewCategory] = useState(createEmptyCategoryDraft);
@@ -1386,6 +1318,15 @@ export default function HomePage() {
   }, [themeMode]);
 
   useEffect(() => {
+    if (accentPalette !== "mono") {
+      document.documentElement.dataset.accent = accentPalette;
+    } else {
+      delete document.documentElement.dataset.accent;
+    }
+    try { window.localStorage.setItem(ACCENT_STORAGE_KEY, accentPalette); } catch { /* ignore */ }
+  }, [accentPalette]);
+
+  useEffect(() => {
     window.localStorage.setItem(
       DASHBOARD_VISIBILITY_STORAGE_KEY,
       JSON.stringify(dashboardVisibility),
@@ -1452,7 +1393,7 @@ export default function HomePage() {
       .slice(0, installments - 1)
       .reduce((sum, row) => sum + parseMoneyToCents(row.amount), 0);
   const paidInCents = payments.reduce((total, payment) => total + payment.amountInCents, 0);
-  const changeInCents = Math.max(paidInCents - totalInCents, 0);
+  const trocoInCents = paidInCents > totalInCents ? paidInCents - totalInCents : 0;
   const filteredCustomers = useMemo(() => {
     const search = normalizeText(customerSearch.trim());
 
@@ -1493,12 +1434,9 @@ export default function HomePage() {
     [cartItems, products],
   );
   const hasCartStockIssue = cartStockIssue !== null;
-  const selectedCustomer = customers.find((customer) => customer.id === selectedCustomerId) ?? null;
   const reportPeriodLabel = financialReport
     ? `${formatDate(financialReport.from)} a ${formatDate(financialReport.to)}`
     : "Periodo do mes atual";
-  const cashOperationalTotalInCents =
-    cashSession?.expectedAmountInCents ?? cashSession?.openingAmountInCents ?? 0;
   const isCashOperationLocked = !cashSession;
   const isSaleInProgress = cartItems.length > 0 && totalInCents > 0;
   const suggestedOpeningAmountInCents = getSuggestedOpeningAmountInCents(lastClosedCashSession);
@@ -1607,7 +1545,7 @@ export default function HomePage() {
       setOperatorProfile(loadedOperatorProfile);
       setEmail(loadedOperatorProfile.email);
       setHasLoadedDashboard(true);
-      const needsCashEntry = !loadedCashSession && loadedOperatorProfile.role !== "STOCKIST";
+      const needsCashEntry = !loadedCashSession;
       setShouldShowCashEntryModal(options?.showCashEntryModal ?? needsCashEntry);
       if (!loadedCashSession) {
         const suggestedOpeningAmountInCents = getSuggestedOpeningAmountInCents(
@@ -1696,14 +1634,10 @@ export default function HomePage() {
         return;
       }
 
-      const isStockist = loggedInOperator.role === "STOCKIST";
-      await loadDashboard("Login realizado. Painel pronto para operacao.", {
-        showCashEntryModal: !isStockist,
-      });
+      await loadDashboard("Login realizado. Painel pronto para operacao.");
       setIsAuthenticated(true);
 
-      // The estoquista lands directly on the stock control view.
-      if (isStockist) {
+      if (loggedInOperator.role === "STOCKIST") {
         setActiveModal("estoque");
       }
     } catch (error) {
@@ -1734,8 +1668,6 @@ export default function HomePage() {
     setPayments([]);
     setOpeningAmount("");
     setShouldShowCashEntryModal(false);
-    setCashWithdrawalAmount("");
-    setCashWithdrawalNote("");
     setDiscount("0");
     setToastMessage("");
     setActiveModal(null);
@@ -1826,6 +1758,39 @@ export default function HomePage() {
     );
   };
 
+  const handleConfirmCashMove = async () => {
+    const amountInCents = parseMoneyToCents(cashMoveValor);
+    if (!amountInCents) {
+      setToastMessage("⚠ Informe o valor da movimentação.");
+      return;
+    }
+    if (!cashMoveMotivo.trim()) {
+      setToastMessage("⚠ Informe o motivo da movimentação.");
+      return;
+    }
+    if (!cashSession) {
+      setToastMessage("⚠ Caixa não está aberto.");
+      return;
+    }
+    setIsLoading(true);
+    try {
+      await registerCashMovement(cashSession.id, {
+        type: cashMoveType === "in" ? "SUPPLY" : "WITHDRAWAL",
+        amountInCents,
+        note: cashMoveMotivo.trim(),
+      });
+      const tipo = cashMoveType === "in" ? "Suprimento" : "Sangria";
+      showToast(`✓ ${tipo} de ${formatMoney(amountInCents)} registrado(a).`);
+      setCashMoveOpen(false);
+      setCashMoveValor("");
+      setCashMoveMotivo("");
+    } catch {
+      setToastMessage("⚠ Erro ao registrar movimentação. Tente novamente.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const addPayment = () => {
     if (!cashSession) {
       setMessage(getCashOperationBlockedMessage());
@@ -1896,18 +1861,6 @@ export default function HomePage() {
     setIsLoading(true);
 
     try {
-      if (cashSession) {
-        const session = await updateCashSessionOpeningAmount(cashSession.id, openingAmountInCents);
-        setCashSession({
-          ...session,
-          expectedAmountInCents: session.expectedAmountInCents ?? session.openingAmountInCents,
-        });
-        setShouldShowCashEntryModal(false);
-        setOpeningAmount(formatMoneyInput(String(openingAmountInCents)));
-        setMessage("Valor de abertura do caixa atualizado com sucesso.");
-        return;
-      }
-
       const session = await openCashSession(openingAmountInCents);
       setCashSession({
         ...session,
@@ -1919,38 +1872,6 @@ export default function HomePage() {
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Erro ao abrir caixa.");
     } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleRegisterCashWithdrawal = async (event: React.SubmitEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    if (!cashSession) {
-      setMessage(getCashOperationBlockedMessage());
-      return;
-    }
-
-    const amountInCents = parseMoneyToCents(cashWithdrawalAmount);
-
-    if (amountInCents <= 0) {
-      setMessage("Informe um valor valido para a sangria.");
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      await registerCashMovement(cashSession.id, {
-        type: "WITHDRAWAL",
-        amountInCents,
-        note: cashWithdrawalNote.trim() || undefined,
-      });
-      setCashWithdrawalAmount("");
-      setCashWithdrawalNote("");
-      await loadDashboard("Sangria registrada com sucesso.", { showCashEntryModal: false });
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Erro ao registrar sangria.");
       setIsLoading(false);
     }
   };
@@ -4381,9 +4302,6 @@ export default function HomePage() {
       return null;
     }
 
-    const activeCashSession = cashSession;
-    const hasOpenCashSession = Boolean(activeCashSession);
-
     return (
       <div className="cash-lock-overlay" role="presentation">
         <div
@@ -4395,9 +4313,7 @@ export default function HomePage() {
         >
           <header className="modal-header cash-opening-modal-header">
             <div>
-              <p className="eyebrow">
-                {hasOpenCashSession ? "Conferencia obrigatoria" : "Abertura obrigatoria"}
-              </p><br/>
+              <p className="eyebrow">Abertura obrigatoria</p>
               {suggestedOpeningAmountInCents > 0 ? (
                 <p>
                   Ultimo fechamento registrado: {formatMoney(suggestedOpeningAmountInCents)}.
@@ -4408,16 +4324,6 @@ export default function HomePage() {
 
           <div className="modal-body">
             <form className="modal-form-grid" onSubmit={(event) => void handleOpenCashSession(event)}>
-              {hasOpenCashSession ? (
-                <div className="cash-lock-message">
-                  <strong>Caixa atualmente aberto</strong>
-                  <p>
-                    Valor anterior de abertura registrado:{" "}
-                    {formatMoney(activeCashSession?.openingAmountInCents ?? 0)}
-                  </p>
-                </div>
-              ) : null}
-
               <label>
                 Valor de entrada do caixa
                 <input
@@ -4433,7 +4339,7 @@ export default function HomePage() {
 
               <div className="form-actions inline-actions">
                 <button className="primary-button block-button" type="submit" disabled={isLoading}>
-                  {hasOpenCashSession ? "Salvar e continuar" : "Confirmar abertura"}
+                  Confirmar abertura
                 </button>
               </div>
             </form>
@@ -4452,13 +4358,13 @@ export default function HomePage() {
     : _w0.slice(0, 2)
   ).toUpperCase();
   const operatorDisplayRole = operatorProfile?.role ?? "Operador";
-
-  const toggleDashboardVisibility = (key: keyof DashboardVisibilitySettings) => {
-    setDashboardVisibility((currentVisibility) => ({
-      ...currentVisibility,
-      [key]: !currentVisibility[key],
-    }));
+  const operatorRoleLabel: Record<string, string> = {
+    ADMIN: "Administrador",
+    MANAGER: "Gerente",
+    CASHIER: "Operador de caixa",
+    STOCKIST: "Estoquista",
   };
+  const operatorRoleLabelText = operatorRoleLabel[operatorDisplayRole] ?? operatorDisplayRole;
 
   if (isBootstrappingSession) {
     return (
@@ -4624,224 +4530,252 @@ export default function HomePage() {
         </div>
       ) : null}
 
-      <header className="pdv-topbar">
-        <div className="topbar-brand">
+      {/* ── Topbar ─────────────────────────────────────────── */}
+      <header style={{
+        display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between",
+        gap: "0.75rem", borderRadius: "var(--radius-xl)", border: "1px solid var(--button-border)",
+        padding: "0.65rem 0.85rem", color: "#f8fafc",
+        background: "linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 100%), var(--panel-gradient)",
+        boxShadow: "0 0 0.8rem color-mix(in srgb, var(--accent) 26%, transparent), var(--shadow)",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
           <BrandLogo className="topbar-logo" color="#ffffff" />
           <div>
-            <p className="eyebrow">Multitenant · Face Delivery</p>
-            <h1>Face Delivery</h1>
+            <p style={{ margin: "0 0 1px", fontSize: "0.7rem", fontWeight: 900, letterSpacing: "0.16em", textTransform: "uppercase", color: "#fff", textShadow: "0 1px 2px rgba(15,23,42,0.45)" }}>
+              Multitenant · Face Delivery
+            </p>
+            <h1 style={{ margin: 0, fontSize: "1.5rem", letterSpacing: "-0.05em", color: "#f8fafc" }}>
+              Face Delivery
+            </h1>
           </div>
         </div>
 
-        <div className="topbar-actions">
-          <span className={`status-pill ${cashSession ? "success" : "danger"}`}>
-            {cashSession ? "Caixa aberto" : "Caixa bloqueado"}
-          </span>
-          <button
-            className="theme-toggle"
-            type="button"
-            onClick={() =>
-              setThemeMode((currentTheme) =>
-                currentTheme === "dark" ? "light" : "dark",
-              )
-            }
-            aria-label={`Ativar modo ${themeMode === "dark" ? "claro" : "escuro"}`}
-            title={`Ativar modo ${themeMode === "dark" ? "claro" : "escuro"}`}
-          >
-            <span
-              className={`theme-toggle-icon ${themeMode === "dark" ? "sun" : "moon"}`}
-              aria-hidden="true"
+        <div style={{ display: "flex", alignItems: "center", gap: "0.55rem" }}>
+          {/* Operator dropdown */}
+          <div style={{ position: "relative" }}>
+            <button
+              type="button"
+              onClick={() => setIsOpMenuOpen((o) => !o)}
+              className="pdv-op-trigger"
+              style={{ display: "flex", alignItems: "center", gap: "0.5rem", background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: "var(--radius-lg)", padding: "0.4rem 0.65rem", cursor: "pointer", color: "#fff", minWidth: "13rem" }}
             >
-              {themeMode === "dark" ? <SunMedium /> : <MoonStar />}
-            </span>
-          </button>
-          <details className="operator-menu" ref={operatorMenuRef}>
-            <summary className="operator-menu-trigger">
-              <span className="operator-menu-avatar" aria-hidden="true">{sessionInitials}</span>
-              <span className="operator-menu-copy">
-                <small>{operatorDisplayRole}</small>
-                <strong>{operatorDisplayName}</strong>
+              <span style={{ height: "2rem", width: "2rem", borderRadius: "50%", display: "grid", placeItems: "center", background: "rgba(255,255,255,0.2)", color: "#fff", fontWeight: 900, fontSize: "0.78rem", flexShrink: 0 }}>
+                {sessionInitials}
               </span>
-              <span className="operator-menu-chevron" aria-hidden="true">
-                <ChevronDown />
+              <span className="pdv-op-name" style={{ display: "grid", gap: "1px", flex: 1, minWidth: 0 }}>
+                <small style={{ color: "#e2e8f0", fontSize: "0.6rem", fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase" }}>{operatorRoleLabelText}</small>
+                <strong style={{ color: "#fff", fontSize: "0.84rem", lineHeight: "1.05" }}>{operatorDisplayName}</strong>
               </span>
-            </summary>
+              <ChevronDown style={{ width: 14, height: 14, flexShrink: 0, transition: "transform 0.18s ease", transform: isOpMenuOpen ? "rotate(180deg)" : undefined }} aria-hidden="true" />
+            </button>
 
-            <div className="operator-menu-dropdown">
-              <Link className="operator-menu-item" href="/perfil" onClick={closeOperatorMenu}>
-                Perfil
-              </Link>
-              {isSystemAdministrator ? (
-                <Link className="operator-menu-item" href="/administracao" onClick={closeOperatorMenu}>
-                  Administracao
+            {isOpMenuOpen && (
+              <div style={{ position: "absolute", right: 0, top: "calc(100% + 0.35rem)", minWidth: "13rem", background: "color-mix(in srgb,var(--surface) 96%,transparent)", border: "1px solid var(--line)", borderRadius: "var(--radius-lg)", boxShadow: "var(--shadow)", padding: "0.3rem", zIndex: 50, display: "grid", gap: "0.15rem" }}>
+                <button type="button" onClick={() => { setIsOpMenuOpen(false); void handleRefreshDashboardFromMenu(); }}
+                  style={{ display: "flex", alignItems: "center", gap: "0.55rem", background: "transparent", border: 0, borderRadius: "0.55rem", color: "var(--text)", cursor: "pointer", fontWeight: 700, fontSize: "0.85rem", padding: "0.5rem 0.6rem", textAlign: "left", width: "100%" }}>
+                  <RefreshCw style={{ width: 14, height: 14, color: "var(--muted)" }} aria-hidden="true" /> Atualizar painel
+                </button>
+                <Link href="/perfil" onClick={() => setIsOpMenuOpen(false)}
+                  style={{ display: "flex", alignItems: "center", gap: "0.55rem", background: "transparent", borderRadius: "0.55rem", color: "var(--text)", cursor: "pointer", fontWeight: 700, fontSize: "0.85rem", padding: "0.5rem 0.6rem", textDecoration: "none" }}>
+                  <UserCog style={{ width: 14, height: 14, color: "var(--muted)" }} aria-hidden="true" /> Perfil do operador
                 </Link>
-              ) : null}
-              <button
-                className="operator-menu-item"
-                type="button"
-                onClick={() => void handleRefreshDashboardFromMenu()}
-                disabled={isLoading}
-              >
-                Atualizar
-              </button>
-              <button
-                className="operator-menu-item danger"
-                type="button"
-                onClick={() => void handleLogoutFromMenu()}
-                disabled={isLoading}
-              >
-                Sair
-              </button>
-            </div>
-          </details>
+                <div style={{ height: 1, background: "var(--line)", margin: "0.2rem 0.3rem" }} />
+                {isSystemAdministrator ? (
+                  <>
+                    <Link href="/administracao" onClick={() => setIsOpMenuOpen(false)}
+                      style={{ display: "flex", alignItems: "center", gap: "0.55rem", background: "color-mix(in srgb,var(--accent) 8%,transparent)", borderRadius: "0.55rem", color: "var(--accent-soft)", cursor: "pointer", fontWeight: 800, fontSize: "0.85rem", padding: "0.5rem 0.6rem", textDecoration: "none" }}>
+                      <ShieldCheck style={{ width: 14, height: 14 }} aria-hidden="true" /> Administração do sistema
+                    </Link>
+                    <div style={{ height: 1, background: "var(--line)", margin: "0.2rem 0.3rem" }} />
+                  </>
+                ) : null}
+                <button type="button" onClick={() => { setIsOpMenuOpen(false); void handleLogoutFromMenu(); }}
+                  style={{ display: "flex", alignItems: "center", gap: "0.55rem", background: "transparent", border: 0, borderRadius: "0.55rem", color: "var(--danger)", cursor: "pointer", fontWeight: 700, fontSize: "0.85rem", padding: "0.5rem 0.6rem", textAlign: "left", width: "100%" }}>
+                  <LogOut style={{ width: 14, height: 14 }} aria-hidden="true" /> Sair
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Palette picker */}
+          <div style={{ position: "relative" }}>
+            <button type="button" onClick={() => setIsPaletteOpen((o) => !o)} title="Cor do sistema"
+              style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", height: "2.5rem", minWidth: "2.5rem", borderRadius: "var(--radius-md)", background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.18)", color: "#fff", cursor: "pointer", transition: "background 0.18s ease" }}>
+              <Palette style={{ width: 18, height: 18 }} aria-hidden="true" />
+            </button>
+            {isPaletteOpen && (
+              <div style={{ position: "absolute", right: 0, top: "3rem", background: "color-mix(in srgb,var(--surface) 96%,transparent)", border: "1px solid var(--line)", borderRadius: "var(--radius-lg)", boxShadow: "var(--shadow)", padding: "0.6rem", zIndex: 60, width: "13rem" }}>
+                <p style={{ margin: "0 0 0.5rem", color: "var(--muted)", fontSize: "0.68rem", fontWeight: 900, letterSpacing: "0.1em", textTransform: "uppercase" }}>Cor do sistema</p>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: "0.4rem" }}>
+                  {([
+                    { id: "mono",    bg: "#3f3f46", title: "Grafite (padrão)" },
+                    { id: "blue",    bg: "#60a5fa", title: "Azul" },
+                    { id: "emerald", bg: "#34d399", title: "Verde" },
+                    { id: "violet",  bg: "#a78bfa", title: "Roxo" },
+                    { id: "amber",   bg: "#fbbf24", title: "Âmbar" },
+                    { id: "rose",    bg: "#fb7185", title: "Rosa" },
+                    { id: "cyan",    bg: "#22d3ee", title: "Ciano" },
+                    { id: "orange",  bg: "#fb923c", title: "Laranja" },
+                    { id: "fuchsia", bg: "#e879f9", title: "Fúcsia" },
+                    { id: "teal",    bg: "#2dd4bf", title: "Turquesa" },
+                  ] as const).map(({ id, bg, title }) => (
+                    <button
+                      key={id}
+                      type="button"
+                      title={title}
+                      onClick={() => { setAccentPalette(id); setIsPaletteOpen(false); }}
+                      className={`pdv-swatch${accentPalette === id ? " pdv-swatch--on" : ""}`}
+                      style={{ background: bg }}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Theme toggle */}
+          <button type="button" onClick={() => setThemeMode((t) => (t === "dark" ? "light" : "dark"))}
+            title={`Ativar modo ${themeMode === "dark" ? "claro" : "escuro"}`}
+            style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", height: "2.5rem", minWidth: "2.5rem", borderRadius: "var(--radius-md)", background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.18)", color: "#fff", fontSize: "1.1rem", cursor: "pointer", transition: "background 0.18s ease" }}>
+            {themeMode === "dark" ? "☀" : "☽"}
+          </button>
         </div>
       </header>
 
-      <div className="pdv-status-strip">
-        <span><strong>Status:</strong> {message}</span>
-        <span><strong>Cliente:</strong> {selectedCustomer?.name ?? "Consumidor final"}</span>
-        <span><strong>Caixa:</strong> {cashSession ? "Aberto" : "Bloqueado"}</span>
-      </div>
+      {/* ── Main PDV layout ─────────────────────────────────── */}
+      <div className="pdv-main-layout" style={{ display: "grid", gap: "0.75rem", gridTemplateColumns: "minmax(0,1.35fr) minmax(360px,0.72fr)", minHeight: 0, overflow: "hidden" }}>
 
-      <section className="pdv-layout">
-        <section className="catalog-panel">
+        {/* ── LEFT: Catalog ──────────────────────────────────── */}
+        <section style={{ background: "color-mix(in srgb, var(--surface) 92%, transparent)", border: "1px solid var(--line)", borderRadius: "var(--radius-xl)", boxShadow: "var(--shadow)", padding: "0.9rem", display: "flex", flexDirection: "column", gap: "0.8rem", overflow: "hidden" }}>
 
-          <CollapsibleDashboardSection
-            className="catalog-heading"
-            collapsedLabel="Cabecalho do catalogo"
-            isCollapsed={dashboardVisibility.hideCatalogHeading}
-            onToggle={() => toggleDashboardVisibility("hideCatalogHeading")}
-          >
-            <div className="catalog-heading-title">
-              <h2>Catálogo</h2>
-              <p className="pdv-catalog-subtitle">Toque em um produto para adicionar ao carrinho.</p>
+          {/* Sessão do caixa — collapsible metrics */}
+          <div style={{ display: "grid", gap: "0.5rem" }}>
+            <div className="pdv-collapse-head">
+              <button type="button" title="Recolher / expandir"
+                className={`pdv-collapse-btn${collapsedLeft.metrics ? " is-collapsed" : ""}`}
+                onClick={() => setCollapsedLeft((s) => ({ ...s, metrics: !s.metrics }))}>
+                <ChevronUp aria-hidden="true" />
+              </button>
+              <span className="pdv-collapse-title">Sessão do caixa</span>
             </div>
+            {!collapsedLeft.metrics && (
+              <div className="pdv-metrics-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "0.58rem" }}>
+                {summaryMetrics.map((metric) => (
+                  <MetricTile key={metric.label} label={metric.label} value={metric.value} note={metric.note} tone={metric.tone} />
+                ))}
+              </div>
+            )}
+          </div>
 
-            <div className="minimum-stock-panel">
-              <div className="minimum-stock-list" aria-label="Produtos com estoque minimo ou zerado">
-                {lowStockProducts.length === 0 ? (
-                  <span className="minimum-stock-empty">Nenhum produto em alerta de estoque.</span>
+          {/* Estoque baixo heading — collapsible */}
+          <div className="pdv-collapse-head">
+            <button type="button" title="Recolher / expandir"
+              className={`pdv-collapse-btn${collapsedLeft.catalogo ? " is-collapsed" : ""}`}
+              onClick={() => setCollapsedLeft((s) => ({ ...s, catalogo: !s.catalogo }))}>
+              <ChevronUp aria-hidden="true" />
+            </button>
+            <div>
+              <h2 style={{ color: "var(--muted)", fontSize: "0.78rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", margin: 0 }}>Estoque baixo</h2>
+              {!collapsedLeft.catalogo && (
+                <p style={{ color: "var(--muted)", margin: "2px 0 0", fontSize: "0.82rem" }}>Toque em um produto para adicionar ao carrinho.</p>
+              )}
+            </div>
+          </div>
+
+          {/* Alerta de estoque mínimo */}
+          {!collapsedLeft.catalogo && (
+            <div style={{ background: "color-mix(in srgb, var(--surface) 94%, transparent)", border: "1px solid color-mix(in srgb, var(--accent) 22%, transparent)", borderRadius: "var(--radius-md)", boxShadow: "inset 0 0 0 1px color-mix(in srgb,#fff 10%,transparent)", padding: "0.5rem" }}>
+              <p style={{ margin: "0 0 0.4rem", color: "var(--accent-soft)", fontSize: "0.66rem", fontWeight: 900, letterSpacing: "0.1em", textTransform: "uppercase", display: "flex", alignItems: "center", gap: "0.35rem" }}>
+                <TriangleAlert style={{ width: 13, height: 13 }} aria-hidden="true" /> Alerta de estoque mínimo
+              </p>
+              <div style={{ display: "grid", gap: "0.18rem", maxHeight: "7rem", overflowY: "auto" }}>
+                {lowStockProducts.length > 0 ? (
+                  [...lowStockProducts]
+                    .sort((a, b) => a.stockQuantity - b.stockQuantity)
+                    .map((p, idx) => (
+                      <div key={p.id} style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) auto", gap: "0.55rem", alignItems: "center", background: "color-mix(in srgb,var(--surface-soft) 82%,transparent)", borderRadius: "0.35rem", padding: "0.32rem 0.45rem", minHeight: "1.7rem" }}>
+                        <strong style={{ color: "var(--text)", fontSize: "0.8rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{idx + 1} - {p.name}</strong>
+                        <span style={{ fontSize: "0.66rem", fontWeight: 900, textTransform: "uppercase", whiteSpace: "nowrap", color: p.stockStatus === "OUT_OF_STOCK" ? "var(--danger)" : "var(--warning)" }}>
+                          QTD. {formatNumber(p.stockQuantity)} {p.unit === "KG" ? "kg" : "un"}
+                        </span>
+                      </div>
+                    ))
                 ) : (
-                  lowStockProducts.map((product, index) => (
-                    <article className="minimum-stock-row" key={product.id}>
-                      <strong>
-                        {index + 1} - {product.name}
-                      </strong>
-                      <span>QTD. {formatCartQuantity(product, product.stockQuantity)}</span>
-                    </article>
-                  ))
+                  <span style={{ color: "var(--muted)", fontSize: "0.8rem", padding: "0.2rem 0.35rem" }}>Nenhum produto em alerta de estoque.</span>
                 )}
               </div>
             </div>
+          )}
 
-            <MetricTile
-              label="Produtos visiveis"
-              value={formatNumber(visibleProducts.length)}
-              note="Resultado da categoria e busca"
-              tone="accent"
-            />
-            <MetricTile
-              label="Total do carrinho"
-              value={formatMoney(totalInCents)}
-              note={`${formatNumber(cartItems.length)} item(ns)`}
-              tone="success"
-            />
-          </CollapsibleDashboardSection>
+          {/* Menu de Categorias label */}
+          <div style={{ display: "grid", gridTemplateColumns: "auto minmax(0,1fr)", gap: "0.5rem", alignItems: "start" }}>
+            <span />
+            <span style={{ color: "var(--muted)", fontSize: "0.78rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em" }}>Menu de Categorias</span>
+          </div>
 
-          <div className="catalog-gap-heading-categories">
-            <CollapsibleDashboardSection
-              className="category-toolbar"
-              collapsedLabel="Categorias"
-              isCollapsed={dashboardVisibility.hideCategoryToolbar}
-              onToggle={() => toggleDashboardVisibility("hideCategoryToolbar")}
-            >
-              <>
+          {/* Category chips — collapsible */}
+          <div style={{ display: "grid", gridTemplateColumns: "auto minmax(0,1fr)", gap: "0.5rem", alignItems: "start" }}>
+            <button type="button" title="Recolher / expandir"
+              className={`pdv-collapse-btn${collapsedLeft.categorias ? " is-collapsed" : ""}`}
+              onClick={() => setCollapsedLeft((s) => ({ ...s, categorias: !s.categorias }))}>
+              <ChevronUp aria-hidden="true" />
+            </button>
+            {!collapsedLeft.categorias && (
+              <div className="pdv-chips-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: "0.55rem" }}>
                 {CATEGORY_SHORTCUTS.map((shortcut) => (
-                  <button
-                    key={shortcut.id}
-                    className={`category-chip ${selectedShortcut === shortcut.id ? "active" : ""}`}
-                    type="button"
-                    onClick={() => setSelectedShortcut(shortcut.id)}
-                  >
+                  <button key={shortcut.id} className={`category-chip${selectedShortcut === shortcut.id ? " active" : ""}`}
+                    type="button" onClick={() => setSelectedShortcut(shortcut.id)} style={{ minHeight: 110 }}>
                     <strong className="category-chip-label">
                       <CategoryShortcutIcon shortcutId={shortcut.id} />
                       <span>{shortcut.label}</span>
                     </strong>
                     <small>
                       {shortcut.id === "TODOS"
-                        ? formatNumber(products.filter((product) => product.active).length)
-                        : formatNumber(products.filter((product) => product.active && matchesShortcut(product, shortcut.id)).length)}
+                        ? formatNumber(products.filter((p) => p.active).length)
+                        : formatNumber(products.filter((p) => p.active && matchesShortcut(p, shortcut.id)).length)}{" "}itens
                     </small>
                   </button>
                 ))}
-
                 <button
-                  className={`menu-shortcut ${hasManagerAccess ? "" : "is-locked"}`.trim()}
+                  className={`menu-shortcut${hasManagerAccess ? "" : " is-locked"}`}
                   type="button"
                   onClick={() => openModal("manager-menu")}
-                  title={
-                    hasManagerAccess
-                      ? "Abrir cadastros e configuracoes"
-                      : "Acesso liberado apenas para administrador e gerente"
-                  }
-                >
+                  title={hasManagerAccess ? "Abrir cadastros e configurações" : "Acesso restrito ao gerente ou administrador"}
+                  style={{ minHeight: 110 }}>
                   <strong className="menu-shortcut-label">
                     <MenuShortcutIcon />
-                    <span>{hasManagerAccess ? "Menu" : "Acesso gerencial bloqueado"}</span>
+                    <span>{hasManagerAccess ? "Gerencial" : "Bloqueado"}</span>
                   </strong>
-                  <small className={hasManagerAccess ? "menu-shortcut-subtitle" : undefined}>
-                    {hasManagerAccess
-                      ? "Admin"
-                      : "Disponivel apenas para administrador e gerente"}
-                  </small>
+                  <small className="menu-shortcut-subtitle">menu gerencial</small>
                 </button>
-              </>
-            </CollapsibleDashboardSection>
-          </div>
-
-          <div className="catalog-gap-categories-search">
-            {dashboardVisibility.hideCatalogSearchField ? (
-              <div className="dashboard-collapsed-block">
-                <button
-                  className="dashboard-collapse-toggle is-inline"
-                  type="button"
-                  onClick={() => toggleDashboardVisibility("hideCatalogSearchField")}
-                  aria-expanded="false"
-                  aria-label="Busca de produtos"
-                  title="Busca de produtos"
-                >
-                  <ChevronDown className="dashboard-collapse-icon" aria-hidden="true" />
-                </button>
-                <span className="dashboard-collapsed-label">Busca de produtos</span>
-              </div>
-            ) : (
-              <div className="dashboard-collapsible-inline">
-                <button
-                  className="dashboard-collapse-toggle is-inline"
-                  type="button"
-                  onClick={() => toggleDashboardVisibility("hideCatalogSearchField")}
-                  aria-expanded="true"
-                  aria-label="Busca de produtos"
-                  title="Busca de produtos"
-                >
-                  <ChevronDown className="dashboard-collapse-icon is-open" aria-hidden="true" />
-                </button>
-                <div className="search-field catalog-search-field dashboard-collapsible-block">
-
-                    <input
-                      value={productSearch}
-                      onChange={(event) => startTransition(() => setProductSearch(event.target.value))}
-                      placeholder="⌕ Busque por Nome, SKU ou código de barras"
-                    />
-
-                </div>
               </div>
             )}
           </div>
 
-          <div className="product-grid catalog-gap-search-products">
+          {/* Search — collapsible */}
+          <div style={{ display: "grid", gridTemplateColumns: "auto minmax(0,1fr)", gap: "0.5rem", alignItems: "center" }}>
+            <button type="button" title="Recolher / expandir"
+              className={`pdv-collapse-btn${collapsedLeft.busca ? " is-collapsed" : ""}`}
+              onClick={() => setCollapsedLeft((s) => ({ ...s, busca: !s.busca }))}>
+              <ChevronUp aria-hidden="true" />
+            </button>
+            {!collapsedLeft.busca && (
+              <div style={{ background: "color-mix(in srgb, var(--surface-soft) 92%, transparent)", border: "1px solid var(--line)", borderRadius: "var(--radius-lg)", padding: "0.55rem 0.7rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <span style={{ color: "var(--muted)", fontWeight: 800, fontSize: "0.9rem" }}>⌕</span>
+                <input
+                  value={productSearch}
+                  onChange={(event) => startTransition(() => setProductSearch(event.target.value))}
+                  placeholder="Buscar por nome, SKU ou código de barras…"
+                  style={{ border: 0, background: "transparent", padding: "0.2rem 0", boxShadow: "none", color: "var(--text)", width: "100%" }}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Product grid */}
+          <div style={{ display: "grid", gap: "0.7rem", gridTemplateColumns: "repeat(auto-fill,minmax(150px,1fr))", flex: 1, minHeight: 0, overflowY: "auto", alignContent: "start", paddingRight: "0.25rem" }}>
             {visibleProducts.length === 0 ? (
-              <div className="empty-panel">
+              <div className="empty-panel" style={{ gridColumn: "1 / -1" }}>
                 <strong>Nenhum produto encontrado.</strong>
                 <span>Revise a busca ou troque a categoria selecionada.</span>
               </div>
@@ -4850,34 +4784,27 @@ export default function HomePage() {
                 const stockTone = getStockTone(product);
                 const stockQty = `${formatNumber(product.stockQuantity)} ${product.unit === "KG" ? "kg" : "un"}`;
                 const stockBadgeText =
-                  product.stockStatus === "OUT_OF_STOCK"
-                    ? "Esgotado"
-                    : product.stockStatus === "LOW_STOCK"
-                    ? "Baixo"
-                    : "Disponível";
+                  product.stockStatus === "OUT_OF_STOCK" ? "Esgotado"
+                  : product.stockStatus === "LOW_STOCK" ? "Baixo"
+                  : "Disponível";
                 return (
-                  <button
-                    className="pdv-product"
-                    type="button"
-                    key={product.id}
+                  <button className="pdv-product" type="button" key={product.id}
                     onClick={() => addProductToCart(product)}
                     disabled={isLoading || isCashOperationLocked}
-                  >
-                    <div className="pdv-product__media">
-                      <img
-                        src={product.imageUrl ?? PRODUCT_WITHOUT_IMAGE_URL}
-                        alt={`Imagem ${product.name}`}
-                      />
+                    style={{ minHeight: 170, padding: "0.55rem" }}>
+                    <div className="pdv-product__media" style={{ minHeight: "3rem" }}>
+                      <img src={product.imageUrl ?? PRODUCT_WITHOUT_IMAGE_URL} alt={`Imagem ${product.name}`} style={{ height: "3rem" }} />
                     </div>
-                    <div className="pdv-product__name">{product.name}</div>
-                    <div className={`pdv-product__stock pdv-product__stock--${stockTone}`}>
+                    <div className="pdv-product__name" style={{ fontSize: "0.72rem", lineHeight: 1.35, WebkitLineClamp: 3, fontWeight: 700, wordBreak: "break-word" }}>
+                      {product.name}
+                    </div>
+                    <div className={`pdv-product__stock pdv-product__stock--${stockTone}`} style={{ fontSize: "0.62rem", fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>
                       ⊙ {stockQty} em estoque
                     </div>
                     <div className="pdv-product__foot">
                       <span className="pdv-product__price">{formatMoney(product.priceInCents)}</span>
                       <span className={`pdv-badge pdv-badge--${stockTone}`}>
-                        <span className="pdv-badge__dot" />
-                        {stockBadgeText}
+                        <span className="pdv-badge__dot" />{stockBadgeText}
                       </span>
                     </div>
                   </button>
@@ -4887,205 +4814,193 @@ export default function HomePage() {
           </div>
         </section>
 
-        <aside className="checkout-panel">
-          <div className="checkout-header">
+        {/* ── RIGHT: Checkout ────────────────────────────────── */}
+        <aside className="pdv-checkout-panel" style={{ background: "var(--checkout-panel-bg)", border: "1px solid var(--line)", borderRadius: "var(--radius-xl)", boxShadow: "var(--shadow)", padding: "0.9rem", display: "grid", gap: "0.65rem", alignContent: "start", overflowY: "auto" }}>
+
+          {/* Cart header with subtotal */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.5rem" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.55rem" }}>
-              <h2 style={{ margin: 0 }}>Carrinho</h2>
-              <span className="tag">{formatNumber(cartItems.length)} item(ns)</span>
+              <h2 style={{ margin: 0, color: "var(--muted)", fontSize: "0.78rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em" }}>Carrinho</h2>
+              <span className="pdv-badge pdv-badge--neutral">
+                {cartItems.reduce((s, i) => s + i.quantity, 0)} itens
+              </span>
             </div>
-            <strong className="checkout-total">{formatMoney(totalInCents)}</strong>
+            <strong style={{ fontSize: "1.3rem", letterSpacing: "-0.04em", fontVariantNumeric: "tabular-nums", color: "var(--accent-soft)" }}>
+              {formatMoney(subtotalInCents)}
+            </strong>
           </div>
 
-          <CollapsibleDashboardSection
-            className="cash-open-card compact-card summary-sale-card"
-            collapsedLabel="Resumo da venda"
-            isCollapsed={dashboardVisibility.hideSummaryRowGrid}
-            onToggle={() => toggleDashboardVisibility("hideSummaryRowGrid")}
-          >
-            <>
+          {/* Resumo da venda — collapsible */}
+          <div className="pdv-collapse-panel">
+            <div style={{ display: "flex", alignItems: "flex-start", gap: "0.6rem" }}>
+              <button type="button" title="Recolher / expandir"
+                className={`pdv-collapse-btn${collapsed.resumo ? " is-collapsed" : ""}`}
+                onClick={() => setCollapsed((s) => ({ ...s, resumo: !s.resumo }))}>
+                <ChevronUp aria-hidden="true" />
+              </button>
               <div>
-                <h3>Resumo da venda</h3>
-                <p>Subtotal e troco calculados para a venda atual.</p>
+                <strong style={{ color: "var(--muted)", fontSize: "0.78rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em" }}>Resumo da venda</strong>
+                <p style={{ margin: "2px 0 0", color: "var(--muted)", fontSize: "0.78rem" }}>Subtotal e troco calculados para a venda atual.</p>
               </div>
-              <div className="summary-row-grid">
-                <MetricTile
-                  label="Subtotal"
-                  value={formatMoney(subtotalInCents)}
-                  note="Antes do desconto"
-                />
-                <MetricTile
-                  label="Troco"
-                  value={formatMoney(changeInCents)}
-                  note="Calculado automaticamente"
-                  tone="success"
-                />
+            </div>
+            {!collapsed.resumo && (
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
+                <div style={{ background: "color-mix(in srgb,var(--accent) 8%,var(--surface))", border: "1px solid var(--line)", borderRadius: "var(--radius-md)", padding: "0.65rem" }}>
+                  <small style={{ color: "var(--muted)", fontSize: "0.64rem", fontWeight: 900, letterSpacing: "0.1em", textTransform: "uppercase" }}>Subtotal</small>
+                  <strong style={{ display: "block", color: "var(--text)", fontSize: "1.5rem", letterSpacing: "-0.04em", fontVariantNumeric: "tabular-nums" }}>{formatMoney(subtotalInCents)}</strong>
+                  <span style={{ color: "var(--muted)", fontSize: "0.62rem" }}>Antes do desconto</span>
+                </div>
+                <div style={{ background: "color-mix(in srgb,var(--success) 12%,var(--surface))", border: "1px solid color-mix(in srgb,var(--success) 26%,transparent)", borderRadius: "var(--radius-md)", padding: "0.65rem" }}>
+                  <small style={{ color: "var(--success)", fontSize: "0.64rem", fontWeight: 900, letterSpacing: "0.1em", textTransform: "uppercase" }}>Troco</small>
+                  <strong style={{ display: "block", color: "var(--text)", fontSize: "1.5rem", letterSpacing: "-0.04em", fontVariantNumeric: "tabular-nums" }}>{formatMoney(trocoInCents)}</strong>
+                  <span style={{ color: "var(--muted)", fontSize: "0.62rem" }}>Calculado automaticamente</span>
+                </div>
               </div>
-            </>
-          </CollapsibleDashboardSection>
+            )}
+          </div>
 
-          {cashSession ? (
-            <CollapsibleDashboardSection
-              className="cash-open-card compact-card"
-              collapsedLabel="Caixa aberto"
-              isCollapsed={dashboardVisibility.hideCashOpenCard}
-              onToggle={() => toggleDashboardVisibility("hideCashOpenCard")}
-            >
-              <>
-                <div>
-                  <h3>Caixa aberto</h3>
-                  <p>Abertura registrada em {formatDateTime(cashSession.openedAt)}.</p>
-                </div>
-
-                <small>Total de entrada no caixa: {formatMoney(cashOperationalTotalInCents)}</small>
-              </>
-            </CollapsibleDashboardSection>
-          ) : (
-            <CollapsibleDashboardSection
-              className="cash-open-card"
-              collapsedLabel="Caixa bloqueado"
-              isCollapsed={dashboardVisibility.hideCashOpenCard}
-              onToggle={() => toggleDashboardVisibility("hideCashOpenCard")}
-            >
-              <>
-                <h3>Caixa bloqueado</h3>
-                <p>Informe o valor de entrada do caixa no modal exibido ao entrar no sistema.</p>
-              </>
-            </CollapsibleDashboardSection>
-          )}
-
-          {cashSession ? (
-            <CollapsibleDashboardSection
-              as="section"
-              className="side-card"
-              collapsedLabel="Sangria do caixa"
-              isCollapsed={dashboardVisibility.hideCashWithdrawalCard}
-              onToggle={() => toggleDashboardVisibility("hideCashWithdrawalCard")}
-            >
-              <div className="side-card-header">
-                <h3>Sangria do caixa</h3>
+          {/* Caixa aberto — collapsible */}
+          <div className="pdv-collapse-panel">
+            <div style={{ display: "flex", alignItems: "flex-start", gap: "0.6rem" }}>
+              <button type="button" title="Recolher / expandir"
+                className={`pdv-collapse-btn${collapsed.caixa ? " is-collapsed" : ""}`}
+                onClick={() => setCollapsed((s) => ({ ...s, caixa: !s.caixa }))}>
+                <ChevronUp aria-hidden="true" />
+              </button>
+              <div>
+                <strong style={{ color: "var(--muted)", fontSize: "0.78rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                  {cashSession ? "Caixa aberto" : "Caixa bloqueado"}
+                </strong>
+                {!collapsed.caixa && cashSession && (
+                  <p style={{ margin: "4px 0 0", color: "var(--muted)", fontSize: "0.78rem", lineHeight: 1.5 }}>
+                    Abertura registrada em {formatDateTime(cashSession.openedAt)}.<br />
+                    Total de entrada no caixa:{" "}
+                    <strong style={{ color: "var(--text)" }}>{formatMoney(cashSession.openingAmountInCents)}</strong>
+                  </p>
+                )}
               </div>
-
-              <form className="modal-form-grid" onSubmit={(event) => void handleRegisterCashWithdrawal(event)}>
-                <div className="form-columns two-columns-form">
-                  <label>
-                    Valor da sangria
-                    <input
-                      inputMode="numeric"
-                      placeholder="0,00"
-                      value={cashWithdrawalAmount}
-                      onChange={(event) => setCashWithdrawalAmount(formatMoneyInput(event.target.value))}
-                      disabled={isLoading || isCashOperationLocked}
-                    />
-                  </label>
-
-                  <label>
-                    Motivo
-                    <input
-                      value={cashWithdrawalNote}
-                      onChange={(event) => setCashWithdrawalNote(event.target.value)}
-                      placeholder="Ex.: retirada para troco externo"
-                      maxLength={300}
-                      disabled={isLoading || isCashOperationLocked}
-                    />
-                  </label>
-                </div>
-
-                <div className="form-actions">
-                  <small>O saldo projetado do caixa sera abatido automaticamente apos a sangria.</small>
-                  <button className="secondary-button" type="submit" disabled={isLoading || isCashOperationLocked}>
-                    Sangria
-                  </button>
-                </div>
-              </form>
-            </CollapsibleDashboardSection>
-          ) : null}
-
-          <section className="side-card cart-side-card">
-            <div className="side-card-header">
-              <h3>Carrinho</h3>
-              <span>{formatNumber(cartItems.length)} item(ns)</span>
             </div>
+          </div>
 
-            <div className="cart-list">
-              {cartItems.length === 0 ? (
-                <div className="empty-cart-state">
-                  <img src={EMPTY_CART_IMAGE_URL} alt="Carrinho vazio" />
-                  <p className="empty-state">Toque em um produto para adicionar.</p>
-                </div>
-              ) : (
-                sortedCartItems.map((item, index) => {
-                  return (
-                    <article
-                      className="cart-item-row"
-                      key={item.product.id}
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => removeCartItem(item.product.id)}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter" || event.key === " ") {
-                          event.preventDefault();
-                          removeCartItem(item.product.id);
-                        }
-                      }}
-                    >
-                      <span className="cart-item-name">
-                        <span className="cart-item-index">{index + 1} - </span>
-                        {item.product.name}
-                      </span>
-                      <span className="cart-item-quantity">
-                        Qtd. {formatCartQuantity(item.product, item.quantity)}
-                      </span>
-                      <strong className="cart-item-total">
-                        {formatMoney(Math.round(item.product.priceInCents * item.quantity))}
-                      </strong>
-                    </article>
-                  );
-                })
-              )}
+          {/* Sangria — collapsible */}
+          <div className="pdv-collapse-panel">
+            <div style={{ display: "flex", alignItems: "flex-start", gap: "0.6rem" }}>
+              <button type="button" title="Recolher / expandir"
+                className={`pdv-collapse-btn${collapsed.sangria ? " is-collapsed" : ""}`}
+                onClick={() => setCollapsed((s) => ({ ...s, sangria: !s.sangria }))}>
+                <ChevronUp aria-hidden="true" />
+              </button>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <strong style={{ color: "var(--muted)", fontSize: "0.78rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em" }}>Inserir ou retirar valores</strong>
+                {!collapsed.sangria && (
+                  <div style={{ display: "grid", gap: "0.55rem", marginTop: "0.55rem" }}>
+                    <span style={{ color: "var(--muted)", fontSize: "0.78rem", lineHeight: 1.5 }}>Registre entradas (suprimento) ou retiradas (sangria) de dinheiro no caixa.</span>
+                    <div style={{ display: "flex", gap: "0.5rem" }}>
+                      <button type="button"
+                        className="secondary-button small-button"
+                        style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "0.4rem" }}
+                        disabled={!cashSession || isLoading}
+                        onClick={() => { setCashMoveType("in"); setCashMoveValor(""); setCashMoveMotivo(""); setCashMoveOpen(true); }}>
+                        <ArrowDownToLine style={{ width: 14, height: 14 }} aria-hidden="true" /> + Suprimento
+                      </button>
+                      <button type="button"
+                        className="secondary-button small-button"
+                        style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "0.4rem" }}
+                        disabled={!cashSession || isLoading}
+                        onClick={() => { setCashMoveType("out"); setCashMoveValor(""); setCashMoveMotivo(""); setCashMoveOpen(true); }}>
+                        <ArrowUpFromLine style={{ width: 14, height: 14 }} aria-hidden="true" /> - Sangria
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-          </section>
+          </div>
 
-          <CollapsibleDashboardSection
-            as="section"
-            className="side-card customer-side-card"
-            collapsedLabel="Cliente"
-            isCollapsed={dashboardVisibility.hideCustomerCard}
-            onToggle={() => toggleDashboardVisibility("hideCustomerCard")}
-          >
-            <div className="side-card-header">
-              <h3>Cliente</h3>
-              <span>{selectedCustomer?.name ?? "Consumidor final"}</span>
-            </div>
-
-            <label>
-              Selecionar cliente
-              <select
-                value={selectedCustomerId}
-                onChange={(event) => setSelectedCustomerId(event.target.value)}
-                disabled={isLoading || isCashOperationLocked}
-              >
-                <option value="">Consumidor final</option>
-                {customers.map((customer) => (
-                  <option key={customer.id} value={customer.id}>
-                    {customer.name}
-                  </option>
+          {/* Cart items box */}
+          <div style={{ background: "var(--cart-panel-bg)", border: "1px solid var(--cart-panel-line)", borderRadius: "var(--radius-lg)", padding: "0.6rem", display: "grid", gap: "0.35rem", maxHeight: "17rem", overflow: "hidden" }}>
+            <p style={{ margin: 0, color: "var(--muted)", fontSize: "0.78rem", fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase" }}>Itens da venda</p>
+            {cartItems.length > 0 ? (
+              <div style={{ display: "grid", gap: "0.3rem", overflowY: "auto", alignContent: "start", paddingRight: "0.25rem" }}>
+                {sortedCartItems.map((item, index) => (
+                  <div
+                    key={item.product.id}
+                    onClick={() => removeCartItem(item.product.id)}
+                    title="Remover"
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); removeCartItem(item.product.id); }
+                    }}
+                    style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) auto auto", gap: "0.55rem", alignItems: "center", borderRadius: "var(--radius-sm)", padding: "0.3rem 0.5rem", cursor: "pointer", background: index % 2 === 0 ? "var(--cart-row-zebra-odd)" : "var(--cart-row-zebra-even)" }}>
+                    <span style={{ color: "var(--text)", fontWeight: 700, fontSize: "0.82rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      <span style={{ color: "var(--muted)" }}>{index + 1} - </span>{item.product.name}
+                    </span>
+                    <span style={{ color: "var(--muted)", fontSize: "0.74rem", fontWeight: 800, fontVariantNumeric: "tabular-nums" }}>Qtd. {item.quantity}</span>
+                    <span style={{ color: "var(--text)", fontWeight: 800, fontVariantNumeric: "tabular-nums", minWidth: 84, textAlign: "right" }}>
+                      {formatMoney(Math.round(item.product.priceInCents * item.quantity))}
+                    </span>
+                  </div>
                 ))}
-              </select>
-            </label>
+              </div>
+            ) : (
+              <div style={{ display: "grid", justifyItems: "center", gap: "0.4rem", padding: "0.6rem", textAlign: "center" }}>
+                <img src={EMPTY_CART_IMAGE_URL} alt="" style={{ height: "4.4rem", width: "auto", opacity: 0.9 }} />
+                <span style={{ color: "var(--muted)", fontSize: "0.82rem" }}>Carrinho vazio. Adicione produtos do catálogo.</span>
+              </div>
+            )}
+          </div>
 
-            <label>
-              Desconto (%)
-              <input
-                inputMode="decimal"
-                placeholder="0"
-                value={discount}
-                onChange={(event) => setDiscount(formatPercentageInput(event.target.value))}
-                disabled={isLoading || isCashOperationLocked}
-              />
-              <small>Equivale a {formatMoney(discountInCents)} sobre o subtotal.</small>
-            </label>
-          </CollapsibleDashboardSection>
+          {/* Cliente — collapsible with discount */}
+          <div className="pdv-collapse-panel">
+            <div style={{ display: "flex", alignItems: "flex-start", gap: "0.6rem" }}>
+              <button type="button" title="Recolher / expandir"
+                className={`pdv-collapse-btn${collapsed.cliente ? " is-collapsed" : ""}`}
+                onClick={() => setCollapsed((s) => ({ ...s, cliente: !s.cliente }))}>
+                <ChevronUp aria-hidden="true" />
+              </button>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.5rem" }}>
+                  <strong style={{ color: "var(--muted)", fontSize: "0.78rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em" }}>Cliente</strong>
+                  <span style={{ color: "var(--muted)", fontSize: "0.82rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {selectedCustomerId
+                      ? (customers.find((c) => c.id === selectedCustomerId)?.name ?? "Consumidor final")
+                      : "Consumidor final"}
+                  </span>
+                </div>
+                {!collapsed.cliente && (
+                  <div style={{ display: "grid", gap: "0.6rem", marginTop: "0.6rem" }}>
+                    <label style={{ display: "grid", gap: "0.35rem" }}>
+                      <span style={{ color: "var(--muted)", fontSize: "0.8rem", fontWeight: 600 }}>Selecionar cliente</span>
+                      <select value={selectedCustomerId} onChange={(e) => setSelectedCustomerId(e.target.value)} disabled={isLoading || isCashOperationLocked}>
+                        <option value="">— Consumidor Final (sem identificação)</option>
+                        {customers.map((c) => (
+                          <option key={c.id} value={c.id}>{c.name}{c.cpf ? `  ·  ${c.cpf}` : ""}</option>
+                        ))}
+                      </select>
+                    </label>
+                    <label style={{ display: "grid", gap: "0.35rem" }}>
+                      <span style={{ color: "var(--muted)", fontSize: "0.8rem", fontWeight: 600 }}>Desconto (%)</span>
+                      <input
+                        inputMode="numeric"
+                        placeholder="0"
+                        value={discount}
+                        onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                          const raw = e.target.value.replace(/\D/g, "");
+                          const v = Math.min(100, parseInt(raw || "0", 10));
+                          setDiscount(String(v));
+                        }}
+                        disabled={isLoading || isCashOperationLocked}
+                      />
+                    </label>
+                    <span style={{ color: "var(--muted)", fontSize: "0.74rem" }}>Equivale a {formatMoney(discountInCents)} sobre o subtotal.</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
 
+          {/* Payment section */}
           <section className="pdv-pay-card">
             <div className="pdv-pay-forms-selector">
               <span>Formas</span>
@@ -5102,18 +5017,13 @@ export default function HomePage() {
                         setExtraPaymentRows((prev) => {
                           const needed = n - 1;
                           if (prev.length >= needed) return prev.slice(0, needed);
-                          
                           const updated = [...prev];
-                          const usedMethods: PaymentInput["method"][] = [paymentMethod, ...updated.map(r => r.method)];
-                          
+                          const usedMethods: PaymentInput["method"][] = [paymentMethod, ...updated.map((r) => r.method)];
                           while (updated.length < needed) {
                             const available = ALL_PAYMENT_METHODS.find((m) => !usedMethods.includes(m.value));
                             const nextMethod = available ? available.value : "CASH";
                             usedMethods.push(nextMethod);
-                            updated.push({
-                              method: nextMethod,
-                              amount: "",
-                            });
+                            updated.push({ method: nextMethod, amount: "" });
                           }
                           return updated;
                         });
@@ -5125,133 +5035,99 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Linha 0 — principal */}
-            <div className="pdv-pay-row">
-              <label className="pdv-pay-label">
-                <span>Pagamento</span>
-                <select
-                  value={paymentMethod}
-                  onChange={(event) => {
-                    const newMethod = event.target.value as PaymentInput["method"];
-                    setPaymentMethod(newMethod);
-                    setExtraPaymentRows((prev) => {
-                      const chosen: PaymentInput["method"][] = [newMethod];
-                      return prev.map((row) => {
-                        let currentMethod = row.method;
-                        if (chosen.includes(currentMethod)) {
-                          const available = ALL_PAYMENT_METHODS.find((m) => !chosen.includes(m.value));
-                          currentMethod = available ? available.value : currentMethod;
-                        }
-                        chosen.push(currentMethod);
-                        return { ...row, method: currentMethod };
-                      });
-                    });
-                  }}
-                >
-                  {ALL_PAYMENT_METHODS.map((m) => (
-                    <option key={m.value} value={m.value}>{m.label}</option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="pdv-pay-label">
-                <span>Valor recebido</span>
-                <input
-                  inputMode="numeric"
-                  value={paymentAmount}
-                  onChange={(event) => setPaymentAmount(formatMoneyInput(event.target.value))}
-                  placeholder="0,00"
-                />
-              </label>
-            </div>
-
-            {/* Linhas extras (2X → 1 extra, 3X → 2 extras) */}
-            {extraPaymentRows.slice(0, installments - 1).map((row, i) => (
-              <div className="pdv-pay-row" key={i + 1}>
+            <div style={{ display: "grid", gap: "0.3rem" }}>
+              <span style={{ color: "var(--muted)", fontSize: "0.78rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em" }}>Em pagamento</span>
+              <div className="pdv-pay-row">
                 <label className="pdv-pay-label">
-                  <span>Pagamento</span>
+                  <span>Forma</span>
                   <select
-                    value={row.method}
+                    value={paymentMethod}
                     onChange={(event) => {
                       const newMethod = event.target.value as PaymentInput["method"];
+                      setPaymentMethod(newMethod);
                       setExtraPaymentRows((prev) => {
-                        const chosen: PaymentInput["method"][] = [paymentMethod];
-                        return prev.map((r, idx) => {
-                          if (idx === i) {
-                            chosen.push(newMethod);
-                            return { ...r, method: newMethod };
-                          }
-                          let currentMethod = r.method;
+                        const chosen: PaymentInput["method"][] = [newMethod];
+                        return prev.map((row) => {
+                          let currentMethod = row.method;
                           if (chosen.includes(currentMethod)) {
                             const available = ALL_PAYMENT_METHODS.find((m) => !chosen.includes(m.value));
                             currentMethod = available ? available.value : currentMethod;
                           }
                           chosen.push(currentMethod);
-                          return { ...r, method: currentMethod };
+                          return { ...row, method: currentMethod };
                         });
                       });
                     }}
                   >
-                    {ALL_PAYMENT_METHODS.filter((m) => {
-                      const usedByPrevious = [
-                        paymentMethod,
-                        ...extraPaymentRows
-                          .slice(0, i)
-                          .map((r) => r.method),
-                      ];
-                      return !usedByPrevious.includes(m.value);
-                    }).map((m) => (
+                    {ALL_PAYMENT_METHODS.map((m) => (
                       <option key={m.value} value={m.value}>{m.label}</option>
                     ))}
                   </select>
                 </label>
-
                 <label className="pdv-pay-label">
                   <span>Valor recebido</span>
                   <input
                     inputMode="numeric"
-                    value={row.amount}
-                    onChange={(event) =>
-                      setExtraPaymentRows((prev) =>
-                        prev.map((r, idx) =>
-                          idx === i
-                            ? { ...r, amount: formatMoneyInput(event.target.value) }
-                            : r,
-                        ),
-                      )
-                    }
+                    value={paymentAmount}
+                    onChange={(event) => setPaymentAmount(formatMoneyInput(event.target.value))}
                     placeholder="0,00"
                   />
                 </label>
               </div>
+            </div>
+
+            {extraPaymentRows.slice(0, installments - 1).map((row, i) => (
+              <div key={i + 1} style={{ display: "grid", gap: "0.3rem" }}>
+                <span style={{ color: "var(--muted)", fontSize: "0.78rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em" }}>Em pagamento</span>
+                <div className="pdv-pay-row">
+                  <label className="pdv-pay-label">
+                    <span>Forma</span>
+                    <select
+                      value={row.method}
+                      onChange={(event) => {
+                        const newMethod = event.target.value as PaymentInput["method"];
+                        setExtraPaymentRows((prev) => {
+                          const chosen: PaymentInput["method"][] = [paymentMethod];
+                          return prev.map((r, idx) => {
+                            if (idx === i) { chosen.push(newMethod); return { ...r, method: newMethod }; }
+                            let currentMethod = r.method;
+                            if (chosen.includes(currentMethod)) {
+                              const available = ALL_PAYMENT_METHODS.find((m) => !chosen.includes(m.value));
+                              currentMethod = available ? available.value : currentMethod;
+                            }
+                            chosen.push(currentMethod);
+                            return { ...r, method: currentMethod };
+                          });
+                        });
+                      }}
+                    >
+                      {ALL_PAYMENT_METHODS.filter((m) => {
+                        const usedByPrevious = [paymentMethod, ...extraPaymentRows.slice(0, i).map((r) => r.method)];
+                        return !usedByPrevious.includes(m.value);
+                      }).map((m) => (
+                        <option key={m.value} value={m.value}>{m.label}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="pdv-pay-label">
+                    <span>Valor recebido</span>
+                    <input
+                      inputMode="numeric"
+                      value={row.amount}
+                      onChange={(event) =>
+                        setExtraPaymentRows((prev) =>
+                          prev.map((r, idx) => idx === i ? { ...r, amount: formatMoneyInput(event.target.value) } : r)
+                        )
+                      }
+                      placeholder="0,00"
+                    />
+                  </label>
+                </div>
+              </div>
             ))}
 
-            {paymentMethod === "CARD" || paymentMethod === "CONTACTLESS" || paymentMethod === "DIGITAL_WALLET" ? (
-              <div className="payment-form-grid two-columns-form-grid">
-                <label>
-                  Terminal
-                  <input
-                    value={terminalId}
-                    onChange={(event) => setTerminalId(event.target.value)}
-                  />
-                </label>
-                <label>
-                  Transação TEF
-                  <input
-                    value={transactionId}
-                    onChange={(event) => setTransactionId(event.target.value)}
-                  />
-                </label>
-              </div>
-            ) : null}
-
-            <button
-              className="secondary-button block-button"
-              type="button"
-              onClick={addPayment}
-              disabled={!canAddPayment}
-              title={hasCartStockIssue ? CART_STOCK_BLOCKED_MESSAGE : undefined}
-            >
+            <button className="secondary-button block-button" type="button" onClick={addPayment}
+              disabled={!canAddPayment} title={hasCartStockIssue ? CART_STOCK_BLOCKED_MESSAGE : undefined}>
               + Adicionar pagamento
             </button>
 
@@ -5265,14 +5141,9 @@ export default function HomePage() {
                     </div>
                     <div className="record-aside horizontal-actions">
                       <strong>{formatMoney(payment.amountInCents)}</strong>
-                      <button
-                        className="ghost-button small-button"
-                        type="button"
-                        onClick={() =>
-                          setPayments((current) => current.filter((_, i) => i !== index))
-                        }
-                        disabled={isLoading || isCashOperationLocked}
-                      >
+                      <button className="ghost-button small-button" type="button"
+                        onClick={() => setPayments((current) => current.filter((_, idx) => idx !== index))}
+                        disabled={isLoading || isCashOperationLocked}>
                         Remover
                       </button>
                     </div>
@@ -5282,31 +5153,19 @@ export default function HomePage() {
             )}
           </section>
 
-          <section className="sale-total-box">
-            <div className="pdv-total-main">
-              <small>Total a pagar</small>
-              <strong>{formatMoney(totalInCents)}</strong>
-            </div>
-            {paidInCents > 0 && (
-              <div className="pdv-total-sub">
-                <span>Recebido <b>{formatMoney(paidInCents)}</b></span>
-                {changeInCents > 0 && (
-                  <span>Troco <b>{formatMoney(changeInCents)}</b></span>
-                )}
-              </div>
-            )}
-            <button
-              className="primary-button block-button large-button"
-              type="button"
-              onClick={() => void handleRegisterSale()}
-              disabled={!canFinalizeSale}
-              title={hasCartStockIssue ? CART_STOCK_BLOCKED_MESSAGE : undefined}
-            >
-              ✓ Finalizar venda
-            </button>
-          </section>
+          {/* Total a pagar */}
+          <div style={{ borderRadius: "var(--radius-lg)", padding: "0.75rem 0.85rem", color: "#fff", background: "var(--button-gradient-hover)", border: "1px solid rgba(255,255,255,0.26)", boxShadow: "var(--glow-soft)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <small style={{ color: "rgba(255,255,255,0.82)", fontSize: "0.72rem", textTransform: "uppercase", fontWeight: 800, letterSpacing: "0.04em" }}>Total a pagar</small>
+            <strong style={{ fontSize: "2rem", letterSpacing: "-0.05em", fontVariantNumeric: "tabular-nums" }}>{formatMoney(totalInCents)}</strong>
+          </div>
+
+          <button className="primary-button block-button large-button" type="button"
+            onClick={() => void handleRegisterSale()} disabled={!canFinalizeSale}
+            title={hasCartStockIssue ? CART_STOCK_BLOCKED_MESSAGE : undefined}>
+            ✓ Finalizar venda
+          </button>
         </aside>
-      </section>
+      </div>
 
       <footer className="pdv-footer">
         <div className="pdv-footer-inner">
@@ -5323,6 +5182,71 @@ export default function HomePage() {
           </a>
         </div>
       </footer>
+
+      {/* ── Movimentação de caixa modal (sangria / suprimento) ── */}
+      {cashMoveOpen && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 310, display: "flex", alignItems: "flex-start", justifyContent: "center", overflowY: "auto", padding: "clamp(4rem,12vh,7rem) 0.5rem 0.5rem", background: "rgba(5,21,42,0.72)", backdropFilter: "blur(8px)" }}>
+          <div style={{ position: "relative", width: "min(34rem,100%)", background: "var(--surface)", border: "1px solid var(--line)", borderRadius: "var(--radius-xl)", boxShadow: "0 36px 90px rgba(5,12,28,0.4)", overflow: "hidden" }}>
+            <header style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 100%), var(--panel-gradient)", borderBottom: "1px solid rgba(255,255,255,0.22)", padding: "1rem 1.3rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div>
+                <p style={{ margin: "0 0 2px", color: "#fff", fontSize: "0.72rem", fontWeight: 900, letterSpacing: "0.16em", textTransform: "uppercase" }}>Movimentação de caixa</p>
+                <h2 style={{ margin: 0, color: "#fff", fontSize: "1.4rem", letterSpacing: "-0.04em" }}>
+                  {cashMoveType === "in" ? "Suprimento de caixa" : "Sangria de caixa"}
+                </h2>
+              </div>
+              <button type="button" onClick={() => setCashMoveOpen(false)} title="Fechar"
+                style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", height: "2rem", width: "2rem", borderRadius: "var(--radius-md)", background: "rgba(255,255,255,0.16)", border: "1px solid rgba(255,255,255,0.22)", color: "#fff", cursor: "pointer" }}>
+                ✕
+              </button>
+            </header>
+            <div style={{ padding: "1.2rem 1.3rem", display: "grid", gap: "0.9rem" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
+                <button type="button"
+                  className={cashMoveType === "in" ? "primary-button" : "secondary-button"}
+                  onClick={() => setCashMoveType("in")}
+                  style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "0.4rem" }}>
+                  <ArrowDownToLine style={{ width: 14, height: 14 }} aria-hidden="true" /> Suprimento
+                </button>
+                <button type="button"
+                  className={cashMoveType === "out" ? "primary-button" : "secondary-button"}
+                  onClick={() => setCashMoveType("out")}
+                  style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "0.4rem" }}>
+                  <ArrowUpFromLine style={{ width: 14, height: 14 }} aria-hidden="true" /> Sangria
+                </button>
+              </div>
+              <p style={{ margin: 0, color: "var(--muted)", fontSize: "0.82rem", lineHeight: 1.55 }}>
+                {cashMoveType === "in"
+                  ? "Entrada de dinheiro no caixa (troco, reforço). O saldo será somado após confirmar."
+                  : "Retirada de dinheiro do caixa. O saldo projetado será abatido após confirmar."}
+              </p>
+              <label style={{ display: "grid", gap: "0.4rem" }}>
+                <span style={{ color: "var(--muted)", fontSize: "0.82rem", fontWeight: 600 }}>Valor</span>
+                <input
+                  inputMode="numeric"
+                  placeholder="0,00"
+                  value={cashMoveValor}
+                  onChange={(e) => setCashMoveValor(formatMoneyInput(e.target.value))}
+                />
+              </label>
+              <label style={{ display: "grid", gap: "0.4rem" }}>
+                <span style={{ color: "var(--muted)", fontSize: "0.82rem", fontWeight: 600 }}>Motivo</span>
+                <input
+                  placeholder="Ex.: troco externo, depósito, retirada de excedente…"
+                  value={cashMoveMotivo}
+                  onChange={(e) => setCashMoveMotivo(e.target.value)}
+                />
+              </label>
+              <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
+                <button type="button" className="ghost-button small-button" onClick={() => setCashMoveOpen(false)} disabled={isLoading}>Cancelar</button>
+                <button type="button" className="primary-button" onClick={() => void handleConfirmCashMove()} disabled={isLoading}
+                  style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", padding: "0.6rem 1rem" }}>
+                  ✓ Confirmar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {renderCashLockScreen()}
       {renderActiveModal()}

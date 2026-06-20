@@ -71,7 +71,7 @@ const users = [
 
 ---
 
-### 2. Frente de Caixa (`frente-de-caixa/FrenteDeCaixa.dc.html`)
+### 2. Frente de Caixa (`pdv/Pdv.dc.html`)
 
 **Propósito:** PDV operacional — catálogo de produtos, carrinho, pagamento e métricas da sessão.
 
@@ -201,7 +201,7 @@ const roleLabel = {
 
 ---
 
-### 4. Painel Administrativo Multitenant (`admin-multitenant/AdminMultitenant.dc.html`)
+### 4. Painel Administrativo Multitenant (`administracao/Administracao.dc.html`)
 
 **Propósito:** Gerenciamento de tenants (clientes do sistema) e configuração de perfis de acesso.
 
@@ -397,8 +397,8 @@ finalizarVenda():
 | Arquivo | Descrição |
 |---------|-----------|
 | `design_handoff/login/Login.dc.html` | Protótipo da tela de login |
-| `design_handoff/frente-de-caixa/FrenteDeCaixa.dc.html` | Protótipo da frente de caixa |
-| `design_handoff/admin-multitenant/AdminMultitenant.dc.html` | Protótipo do painel admin |
+| `design_handoff/pdv/Pdv.dc.html` | Protótipo da frente de caixa |
+| `design_handoff/administracao/Administracao.dc.html` | Protótipo do painel admin |
 | `design_handoff/styles.css` | Entry point CSS (importa todos os tokens) |
 | `design_handoff/tokens/` | Arquivos de tokens (colors, typography, spacing) |
 | `design_handoff/assets/` | Logos, fontes e ícones |

@@ -99,11 +99,11 @@ class Component extends DCLogic {
 
   // Roles aligned with production: operator-roles.ts (ADMIN, MANAGER, CASHIER, STOCKIST)
   users = [
-    { role: "SYSTEM_ADMIN", name: "Admin do sistema",  icon: "shield",           email: "admin@pdv.local",       password: "Admin@2024",     dest: "../admin-multitenant/AdminMultitenant.dc.html" },
-    { role: "ADMIN",        name: "Administrador",      icon: "building-2",       email: "admin@loja.com.br",     password: "Admin@2024",     dest: "../frente-de-caixa/FrenteDeCaixa.dc.html" },
-    { role: "MANAGER",      name: "Gerente",             icon: "layout-dashboard", email: "gerente@loja.com.br",  password: "Gerente@2024",   dest: "../frente-de-caixa/FrenteDeCaixa.dc.html" },
-    { role: "CASHIER",      name: "Funcionário",         icon: "monitor",          email: "caixa@loja.com.br",    password: "Caixa@2024",     dest: "../frente-de-caixa/FrenteDeCaixa.dc.html" },
-    { role: "STOCKIST",     name: "Estoquista",          icon: "warehouse",        email: "estoque@loja.com.br",  password: "Estoque@2024",   dest: "../frente-de-caixa/FrenteDeCaixa.dc.html" },
+    { role: "SYSTEM_ADMIN", name: "Admin do sistema",  icon: "shield",           email: "admin@pdv.local",       password: "Admin@2024",     dest: "../administracao/Administracao.dc.html" },
+    { role: "ADMIN",        name: "Administrador",      icon: "building-2",       email: "admin@loja.com.br",     password: "Admin@2024",     dest: "../pdv/Pdv.dc.html" },
+    { role: "MANAGER",      name: "Gerente",             icon: "layout-dashboard", email: "gerente@loja.com.br",  password: "Gerente@2024",   dest: "../pdv/Pdv.dc.html" },
+    { role: "CASHIER",      name: "Funcionário",         icon: "monitor",          email: "caixa@loja.com.br",    password: "Caixa@2024",     dest: "../pdv/Pdv.dc.html" },
+    { role: "STOCKIST",     name: "Estoquista",          icon: "warehouse",        email: "estoque@loja.com.br",  password: "Estoque@2024",   dest: "../pdv/Pdv.dc.html" },
   ];
 
   getRole() {
@@ -136,7 +136,7 @@ class Component extends DCLogic {
           return;
         }
         localStorage.setItem("pdv_user", JSON.stringify({ role: user.role, name: user.name, email: em }));
-        window.location.href = "../frente-de-caixa/FrenteDeCaixa.dc.html";
+        window.location.href = "../pdv/Pdv.dc.html";
       },
     };
   }
