@@ -13,7 +13,12 @@ const frontendUrl = process.env.FRONTEND_URL ?? "http://localhost:3000";
 const pdvUrl = `${frontendUrl}/pdv`;
 let mainWindow: BrowserWindow | null = null;
 
-//app.disableHardwareAcceleration();
+app.commandLine.appendSwitch("ozone-platform-hint", "auto");
+app.commandLine.appendSwitch("no-sandbox");
+app.commandLine.appendSwitch("disable-gpu");
+app.commandLine.appendSwitch("disable-dev-shm-usage");
+
+app.commandLine.appendSwitch("ozone-platform-hint", "auto");
 app.commandLine.appendSwitch("no-sandbox");
 app.commandLine.appendSwitch("disable-gpu");
 app.commandLine.appendSwitch("disable-gpu-compositing");
@@ -98,8 +103,7 @@ const createMainWindow = () => {
 
   console.log(`Abrindo Electron em ${pdvUrl}`);
   if (process.env.NODE_ENV !== "production") {
-    // Abrir DevTools automaticamente no modo de desenvolvimento para facilitar depuracao
-    mainWindow.webContents.openDevTools({ mode: "right" });
+   // mainWindow.webContents.openDevTools({ mode: "right" });
   }
   void mainWindow.loadURL(pdvUrl);
 };

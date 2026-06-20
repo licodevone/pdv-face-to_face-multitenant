@@ -34,14 +34,23 @@ try {
 
 const desktopMain = resolve(projectRoot, "desktop/launcher.cjs");
 
-const child = spawn("pnpm", ["exec", "electron", desktopMain], {
+// Altere o bloco para enviar os switches do Chromium no array de argumentos
+const child = spawn("electron", [
+  desktopMain, 
+  "--no-sandbox", 
+  "--disable-gpu", 
+  "--disable-dev-shm-usage",
+  "--disable-dev-tools" // <-- ADICIONE ESTA LINHA EXATAMENTE AQUI
+], {
   stdio: "inherit",
   shell: process.platform === "win32",
   cwd: projectRoot,
   env: {
     ...process.env,
     FRONTEND_URL: frontendUrl,
-    NODE_ENV: "development",
+    NODE_ENV: "production",
+    DISPLAY: ":0",
+    ELECTRON_OZONE_PLATFORM_HINT: "auto"
   },
 });
 
