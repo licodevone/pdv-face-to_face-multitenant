@@ -92,19 +92,3 @@ Preciso de um relatório detalhado estruturado da seguinte forma:
 2. Arquitetura e Fluxo: Como os arquivos se conectam? Explique o fluxo de trabalho desde a inicialização até a execução principal.
 
 
-<mark> verifique padrões de projeto que podem ser aplicado no sistema, apenas leitura dos temas e um breve
-  resumo porque devo seguir esse padão.  Criacionais, Factory Method, Abstract Factory, Builder,
-  Prototype, Adapter, Facade, Decorator, Proxy, Composite, Observer, Strategy, State, Command, Template
-  Method, clean code</mark>
-
-  Análise detalhado de engenharia reversa do sistema.
-
-reverse_engineering_report.md
-Resumo dos Pontos Analisados no Relatório:
-
-1. `Responsabilidade de Componentes e Arquivos:` Mapeamento de como o backend em Fastify (src/), o frontend Next.js (frontend/), o banco de dados via Prisma (prisma/) e o empacotamento com Electron (desktop/) organizam suas respectivas funções e classes principais, incluindo o isolamento multitenant no banco de dados e rotas.
-
-2. `Arquitetura e Fluxo do Sistema:` Diagramas de sequência detalhando o processo de inicialização (bootstrapping) do ambiente dev com dev.ts , e o fluxo de transação ponta a ponta durante o fechamento de uma venda com RegisterSale  envolvendo integração com balanças e maquininhas de cartão.
-
-3. `Padrões de Projeto Aplicados/Propostos:` Análise de como os padrões de projeto recomendados (como Factory Method, Abstract Factory, Builder, Adapter, Facade, Composite, Observer, Strategy, State, Command, Template Method e práticas de Clean Code) estão presentes ou podem ser incorporados no código para melhorar o desacoplamento e a manutenibilidade do sistema.
-

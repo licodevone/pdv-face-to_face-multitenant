@@ -281,7 +281,13 @@ class Component extends DCLogic {
     draft: { tenantName: "", tenantId: "", tenantSlug: "", adminName: "", adminEmail: "", adminPassword: "" },
   };
 
-  componentDidMount()  { if (window.lucide) window.lucide.createIcons(); }
+  componentDidMount()  {
+    try {
+      const a = localStorage.getItem("pdv_accent");
+      if (a && a !== "mono") document.documentElement.dataset.accent = a;
+    } catch(e) {}
+    if (window.lucide) window.lucide.createIcons();
+  }
   componentDidUpdate() { if (window.lucide) window.lucide.createIcons(); }
 
   // Roles aligned with production: operator-roles.ts (ADMIN, MANAGER, CASHIER, STOCKIST)
@@ -411,7 +417,7 @@ class Component extends DCLogic {
 
       openNewTenant:   () => this.setState({ showNewForm: true, statusMessage: "Preencha os dados abaixo para criar um novo cliente." }),
       cancelNewTenant: () => this.setState({ showNewForm: false, draft: { tenantName: "", tenantId: "", tenantSlug: "", adminName: "", adminEmail: "", adminPassword: "" }, statusMessage: "Criação de cliente cancelada." }),
-      goBack:          () => { window.location.href = "../frente-de-caixa/FrenteDeCaixa.dc.html"; },
+      goBack:          () => { window.location.href = "../pdv/Pdv.dc.html"; },
 
       draft: d,
       setTenantName:     (e) => this.setState((st) => ({ draft: { ...st.draft, tenantName: e.target.value } })),
