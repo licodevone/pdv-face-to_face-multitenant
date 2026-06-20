@@ -10,6 +10,7 @@ import type { ScaleReadInput } from "./hardware/scale-adapter.js";
 
 const currentDir = dirname(fileURLToPath(import.meta.url));
 const frontendUrl = process.env.FRONTEND_URL ?? "http://localhost:3000";
+const pdvUrl = `${frontendUrl}/pdv`;
 let mainWindow: BrowserWindow | null = null;
 
 //app.disableHardwareAcceleration();
@@ -41,7 +42,7 @@ const loadFallbackPage = ({ errorDescription }: { errorDescription: string }) =>
       <body>
         <main>
           <h1>Electron iniciado</h1>
-          <p>A janela desktop abriu, mas o frontend ainda não respondeu em <code>${frontendUrl}</code>.</p>
+          <p>A janela desktop abriu, mas o frontend ainda não respondeu em <code>${pdvUrl}</code>.</p>
           <p>Erro: <code>${errorDescription}</code></p>
           <p>Se estiver usando <code>pnpm dev</code>, aguarde o Next finalizar o carregamento e reinicie o desktop com <code>pnpm dev:desktop</code>.</p>
         </main>
@@ -95,12 +96,12 @@ const createMainWindow = () => {
     mainWindow = null;
   });
 
-  console.log(`Abrindo Electron em ${frontendUrl}`);
+  console.log(`Abrindo Electron em ${pdvUrl}`);
   if (process.env.NODE_ENV !== "production") {
     // Abrir DevTools automaticamente no modo de desenvolvimento para facilitar depuracao
     mainWindow.webContents.openDevTools({ mode: "right" });
   }
-  void mainWindow.loadURL(frontendUrl);
+  void mainWindow.loadURL(pdvUrl);
 };
 
 const registerHardwareHandlers = () => {

@@ -1,4 +1,5 @@
 import * as React from "react"
+import { Slot } from "@radix-ui/react-slot"
 
 import { cn } from "@/lib/utils"
 
@@ -7,8 +8,11 @@ const Button = React.forwardRef<
   React.ButtonHTMLAttributes<HTMLButtonElement> & {
     variant?: 'default' | 'secondary' | 'ghost' | 'outline'
     size?: 'sm' | 'md' | 'lg'
+    asChild?: boolean
   }
->(({ className, variant = 'default', size = 'md', ...props }, ref) => {
+>(({ className, variant = 'default', size = 'md', asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'button'
+
   const baseClasses = `
     inline-flex items-center justify-center gap-2 font-semibold
     transition-all duration-200 ease-out
@@ -42,7 +46,7 @@ const Button = React.forwardRef<
   }
 
   return (
-    <button
+    <Comp
       ref={ref}
       className={cn(baseClasses, sizeClasses[size], variantClasses[variant], className)}
       {...props}

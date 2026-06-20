@@ -2,6 +2,9 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   ArrowLeft,
   ArrowLeftRight,
@@ -301,7 +304,7 @@ export function AdministracaoClientPage() {
           <div className="topbar-brand">
             <BrandLogo className="topbar-logo" color="#ffffff" />
             <div>
-              <p className="eyebrow">Administração do sistema</p>
+              <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Administração do sistema</p>
               <h1>Painel multitenant</h1>
             </div>
           </div>
@@ -310,10 +313,12 @@ export function AdministracaoClientPage() {
               <Shield size={13} />
               Admin do sistema
             </span>
-            <Link className="secondary-button adm-icon-btn" href="/pdv">
-              <ArrowLeft size={15} />
-              Voltar ao PDV
-            </Link>
+            <Button asChild variant="secondary" size="sm" className="adm-icon-btn">
+              <Link href="/pdv">
+                <ArrowLeft size={15} />
+                Voltar ao PDV
+              </Link>
+            </Button>
           </div>
         </header>
 
@@ -328,24 +333,24 @@ export function AdministracaoClientPage() {
           <div className="adm-card-header">
             <div>
               <h2 className="adm-card-title">Clientes cadastrados</h2>
-              <p className="profile-helper-text">
+              <p className="text-sm text-muted-foreground">
                 {registeredTenants.length} cliente{registeredTenants.length === 1 ? "" : "s"} no ambiente multitenant.
               </p>
             </div>
-            <button
-              className="primary-button adm-icon-btn"
+            <Button
+              className="adm-icon-btn"
               type="button"
               onClick={handleOpenNewForm}
               disabled={showNewForm}
             >
               <Plus size={15} />
               Novo cliente
-            </button>
+            </Button>
           </div>
 
           <div className="adm-tenant-list">
             {isListingTenants && registeredTenants.length === 0 ? (
-              <p className="profile-helper-text">Carregando clientes...</p>
+              <p className="text-sm text-muted-foreground">Carregando clientes...</p>
             ) : registeredTenants.length === 0 ? (
               <div className="adm-empty-state">
                 <Building2 size={40} className="adm-empty-icon" />
@@ -360,10 +365,10 @@ export function AdministracaoClientPage() {
                     /* Edit mode */
                     <div className="adm-tenant-edit">
                       <p className="adm-edit-label">Editando — {tenant.name}</p>
-                      <div className="form-columns two-columns-form">
-                        <label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <label className="flex flex-col gap-1.5 text-sm font-medium">
                           Nome do cliente
-                          <input
+                          <Input
                             value={editingTenantDraft.name}
                             onChange={(e) =>
                               setEditingTenantDraft((d) => d ? { ...d, name: e.target.value } : null)
@@ -371,9 +376,9 @@ export function AdministracaoClientPage() {
                             disabled={isMutatingTenant}
                           />
                         </label>
-                        <label>
+                        <label className="flex flex-col gap-1.5 text-sm font-medium">
                           Slug
-                          <input
+                          <Input
                             value={editingTenantDraft.slug}
                             onChange={(e) =>
                               setEditingTenantDraft((d) => d ? { ...d, slug: e.target.value } : null)
@@ -382,7 +387,7 @@ export function AdministracaoClientPage() {
                           />
                         </label>
                       </div>
-                      <label className="profile-checkbox-row">
+                      <label className="flex items-center gap-2 text-sm cursor-pointer">
                         <input
                           type="checkbox"
                           checked={editingTenantDraft.isActive}
@@ -390,27 +395,28 @@ export function AdministracaoClientPage() {
                             setEditingTenantDraft((d) => d ? { ...d, isActive: e.target.checked } : null)
                           }
                           disabled={isMutatingTenant}
+                          className="h-4 w-4 rounded border border-input accent-primary"
                         />
                         <span>Cliente ativo</span>
                       </label>
-                      <div className="horizontal-actions">
-                        <button
-                          className="ghost-button"
+                      <div className="flex gap-2 justify-end">
+                        <Button
+                          variant="ghost"
                           type="button"
                           onClick={handleCancelTenantEdit}
                           disabled={isMutatingTenant}
                         >
                           Cancelar
-                        </button>
-                        <button
-                          className="primary-button adm-icon-btn"
+                        </Button>
+                        <Button
+                          className="adm-icon-btn"
                           type="button"
                           onClick={() => void handleSaveTenant(tenant.id)}
                           disabled={isMutatingTenant}
                         >
                           <Save size={13} />
                           {isMutatingTenant ? "Salvando..." : "Salvar"}
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   ) : (
@@ -425,24 +431,28 @@ export function AdministracaoClientPage() {
                           </span>
                         </div>
                         <div className="adm-tenant-actions">
-                          <button
-                            className="ghost-button adm-icon-btn"
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="adm-icon-btn"
                             type="button"
                             onClick={() => handleStartTenantEdit(tenant)}
                             disabled={isBusy}
                           >
                             <Pencil size={13} />
                             Editar
-                          </button>
-                          <button
-                            className="ghost-button adm-icon-btn adm-danger-btn"
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="adm-icon-btn adm-danger-btn"
                             type="button"
                             onClick={() => void handleDeleteTenant(tenant)}
                             disabled={isBusy}
                           >
                             <Trash2 size={13} />
                             Excluir
-                          </button>
+                          </Button>
                         </div>
                       </div>
                       <div className="adm-tenant-meta">
@@ -463,24 +473,24 @@ export function AdministracaoClientPage() {
         {/* Consultar tenant */}
         <section className="adm-card">
           <div>
-            <p className="eyebrow">Consulta</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Consulta</p>
             <h3 className="adm-section-title">Consultar tenant</h3>
-            <p className="profile-helper-text">Informe o slug ou id do cliente para verificar a infraestrutura cadastrada.</p>
+            <p className="text-sm text-muted-foreground">Informe o slug ou id do cliente para verificar a infraestrutura cadastrada.</p>
           </div>
           <form className="adm-resolve-form" onSubmit={(e) => void handleResolveTenant(e)}>
-            <label>
+            <label className="flex flex-col gap-1.5 text-sm font-medium">
               Slug ou id do tenant
-              <input
+              <Input
                 autoComplete="organization"
                 placeholder="ex.: loja-demo"
                 value={tenantLookup}
                 onChange={(e) => setTenantLookup(e.target.value)}
               />
             </label>
-            <button className="primary-button adm-icon-btn adm-resolve-btn" type="submit" disabled={isResolving}>
+            <Button className="adm-icon-btn adm-resolve-btn" type="submit" disabled={isResolving}>
               <Search size={14} />
               {isResolving ? "Consultando..." : "Consultar"}
-            </button>
+            </Button>
           </form>
           {resolvedTenant && (
             <div className="adm-resolve-result">
@@ -494,18 +504,18 @@ export function AdministracaoClientPage() {
         {showNewForm && (
           <section className="adm-card">
             <div>
-              <p className="eyebrow">Provisionamento</p>
+              <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Provisionamento</p>
               <h2 className="adm-card-title">Novo cliente</h2>
-              <p className="profile-helper-text">Crie a estrutura inicial do cliente e o primeiro administrador do tenant.</p>
+              <p className="text-sm text-muted-foreground">Crie a estrutura inicial do cliente e o primeiro administrador do tenant.</p>
             </div>
             <form onSubmit={(e) => void handleProvisionTenant(e)}>
               <div className="adm-new-form-grid">
                 {/* Dados do cliente */}
                 <div className="adm-new-form-subcard">
                   <p className="adm-subcard-label">Dados do cliente</p>
-                  <label>
+                  <label className="flex flex-col gap-1.5 text-sm font-medium">
                     Nome do cliente *
-                    <input
+                    <Input
                       placeholder="Ex.: Mercado São João"
                       value={tenantDraft.tenantName}
                       onChange={(e) => setTenantDraft((d) => ({ ...d, tenantName: e.target.value }))}
@@ -513,19 +523,19 @@ export function AdministracaoClientPage() {
                       required
                     />
                   </label>
-                  <div className="form-columns two-columns-form">
-                    <label>
-                      Tenant ID <small>(opcional)</small>
-                      <input
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <label className="flex flex-col gap-1.5 text-sm font-medium">
+                      Tenant ID <small className="font-normal text-muted-foreground">(opcional)</small>
+                      <Input
                         placeholder="auto"
                         value={tenantDraft.tenantId}
                         onChange={(e) => setTenantDraft((d) => ({ ...d, tenantId: e.target.value }))}
                         disabled={isProvisioning}
                       />
                     </label>
-                    <label>
-                      Slug <small>(opcional)</small>
-                      <input
+                    <label className="flex flex-col gap-1.5 text-sm font-medium">
+                      Slug <small className="font-normal text-muted-foreground">(opcional)</small>
+                      <Input
                         placeholder="mercado-sao-joao"
                         value={tenantDraft.tenantSlug}
                         onChange={(e) => setTenantDraft((d) => ({ ...d, tenantSlug: e.target.value }))}
@@ -538,9 +548,9 @@ export function AdministracaoClientPage() {
                 {/* Administrador inicial */}
                 <div className="adm-new-form-subcard">
                   <p className="adm-subcard-label">Administrador inicial</p>
-                  <label>
+                  <label className="flex flex-col gap-1.5 text-sm font-medium">
                     Nome do admin *
-                    <input
+                    <Input
                       placeholder="Ex.: João Silva"
                       value={tenantDraft.adminName}
                       onChange={(e) => setTenantDraft((d) => ({ ...d, adminName: e.target.value }))}
@@ -548,9 +558,9 @@ export function AdministracaoClientPage() {
                       required
                     />
                   </label>
-                  <label>
+                  <label className="flex flex-col gap-1.5 text-sm font-medium">
                     E-mail do admin *
-                    <input
+                    <Input
                       type="email"
                       placeholder="joao@loja.com.br"
                       value={tenantDraft.adminEmail}
@@ -559,21 +569,22 @@ export function AdministracaoClientPage() {
                       required
                     />
                   </label>
-                  <label>
+                  <label className="flex flex-col gap-1.5 text-sm font-medium">
                     Senha inicial *
-                    <div className="pwd-wrap">
-                      <input
+                    <div className="relative flex items-center">
+                      <Input
                         type={showAdminPassword ? "text" : "password"}
                         placeholder="mín. 8 caracteres"
                         minLength={8}
                         value={tenantDraft.adminPassword}
                         onChange={(e) => setTenantDraft((d) => ({ ...d, adminPassword: e.target.value }))}
+                        className="pr-9"
                         disabled={isProvisioning}
                         required
                       />
                       <button
                         type="button"
-                        className="pwd-toggle"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 text-muted-foreground hover:text-foreground transition-colors"
                         onClick={() => setShowAdminPassword((v) => !v)}
                         aria-label={showAdminPassword ? "Ocultar senha" : "Mostrar senha"}
                       >
@@ -585,18 +596,18 @@ export function AdministracaoClientPage() {
               </div>
 
               <div className="adm-new-form-footer">
-                <button
-                  className="ghost-button"
+                <Button
+                  variant="ghost"
                   type="button"
                   onClick={handleCancelNewForm}
                   disabled={isProvisioning}
                 >
                   Cancelar
-                </button>
-                <button className="primary-button adm-icon-btn" type="submit" disabled={isProvisioning}>
+                </Button>
+                <Button className="adm-icon-btn" type="submit" disabled={isProvisioning}>
                   <CheckCheck size={16} />
                   {isProvisioning ? "Criando..." : "Criar cliente"}
-                </button>
+                </Button>
               </div>
             </form>
           </section>
@@ -605,9 +616,9 @@ export function AdministracaoClientPage() {
         {/* Configuração de telas por perfil */}
         <section className="adm-card">
           <div>
-            <p className="eyebrow">Personalização</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Personalização</p>
             <h2 className="adm-card-title">Configuração de telas por perfil</h2>
-            <p className="profile-helper-text">
+            <p className="text-sm text-muted-foreground">
               Ative ou desative seções para cada tipo de usuário. As alterações afetam todos os clientes desse perfil.
             </p>
           </div>
@@ -630,7 +641,7 @@ export function AdministracaoClientPage() {
           </div>
 
           <div className="adm-profile-sections">
-            <p className="profile-helper-text adm-profile-desc">{activeProfileDef?.desc}</p>
+            <p className="text-sm text-muted-foreground adm-profile-desc">{activeProfileDef?.desc}</p>
             <div className="adm-section-list">
               {SECTION_DEFS.map((sec) => {
                 const SectionIcon = sec.icon;

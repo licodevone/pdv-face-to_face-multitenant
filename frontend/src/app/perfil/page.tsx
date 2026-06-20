@@ -4,6 +4,10 @@ import Link from "next/link";
 import { ChevronDown, Eye, EyeOff } from "lucide-react";
 import { FormEvent, useEffect, useRef, useState } from "react";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+
 import {
   ChangeCurrentOperatorPasswordInput,
   OperatorProfile,
@@ -217,15 +221,15 @@ export default function OperatorProfilePage() {
           <div className="topbar-brand">
             <BrandLogo className="topbar-logo" color="#ffffff" />
             <div>
-              <p className="eyebrow">Gerenciamento de conta</p>
+              <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Gerenciamento de conta</p>
               <h1>Seu Perfil</h1>
             </div>
           </div>
 
           <div className="topbar-actions">
-            <Link className="secondary-button" href="/pdv">
-              Voltar
-            </Link>
+            <Button asChild variant="secondary" size="sm">
+              <Link href="/pdv">Voltar</Link>
+            </Button>
 
             <details className="operator-menu" ref={operatorMenuRef}>
               <summary className="operator-menu-trigger">
@@ -240,33 +244,33 @@ export default function OperatorProfilePage() {
               </summary>
 
               <div className="operator-menu-dropdown">
-                <button
+                <Button
                   className="operator-menu-item"
+                  variant="ghost"
+                  size="sm"
                   type="button"
                   onClick={() => void handleRefreshProfileFromMenu()}
                   disabled={isLoading || isSavingProfile || isChangingPassword}
                 >
                   Atualizar
-                </button>
+                </Button>
                 {hasManagerAccess ? (
-                  <Link
-                    className="operator-menu-item"
-                    href="/perfil/funcionarios"
-                    onClick={closeOperatorMenu}
-                  >
-                    Funcionários
-                  </Link>
+                  <Button asChild variant="ghost" size="sm" className="operator-menu-item">
+                    <Link href="/perfil/funcionarios" onClick={closeOperatorMenu}>
+                      Funcionários
+                    </Link>
+                  </Button>
                 ) : null}
                 <hr className="operator-menu-divider" />
-                <button
+                <Button
                   className="operator-menu-item danger"
+                  variant="ghost"
+                  size="sm"
                   type="button"
-                  onClick={() => {
-                    closeOperatorMenu();
-                  }}
+                  onClick={closeOperatorMenu}
                 >
                   Sair
-                </button>
+                </Button>
               </div>
             </details>
           </div>
@@ -274,15 +278,15 @@ export default function OperatorProfilePage() {
 
         {message && (
           <div className="profile-status-strip panel-card">
-            <p className="profile-helper-text">{message}</p>
+            <p className="text-sm text-muted-foreground">{message}</p>
           </div>
         )}
 
         <div className="profile-layout">
           <aside className="profile-summary-card panel-card">
             <div className="profile-card-heading">
-              <p className="eyebrow">Resumo da Conta</p>
-              <p className="profile-helper-text">Dados da sessão autenticada</p>
+              <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Resumo da Conta</p>
+              <p className="text-sm text-muted-foreground">Dados da sessão autenticada</p>
             </div>
 
             <div className="profile-avatar-circle">{sessionInitials}</div>
@@ -306,14 +310,14 @@ export default function OperatorProfilePage() {
           <div className="profile-main-column">
             <form className="profile-form-card panel-card" onSubmit={(event) => void handleSubmit(event)}>
               <div className="profile-card-heading">
-                <p className="eyebrow">Dados do cadastro</p>
-                <p className="profile-helper-text">Essas informações alimentam o topo do PDV e o cadastro do operador.</p>
+                <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Dados do cadastro</p>
+                <p className="text-sm text-muted-foreground">Essas informações alimentam o topo do PDV e o cadastro do operador.</p>
               </div>
 
-              <div className="form-columns two-columns-form mb-4">
-                <label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                <label className="flex flex-col gap-1.5 text-sm font-medium">
                   Nome completo
-                  <input
+                  <Input
                     autoComplete="name"
                     value={draft.name}
                     onChange={(event) =>
@@ -327,9 +331,9 @@ export default function OperatorProfilePage() {
                   />
                 </label>
 
-                <label>
+                <label className="flex flex-col gap-1.5 text-sm font-medium">
                   E-mail de acesso
-                  <input
+                  <Input
                     autoComplete="email"
                     inputMode="email"
                     type="email"
@@ -346,9 +350,9 @@ export default function OperatorProfilePage() {
                 </label>
               </div>
 
-              <label className="mb-4">
+              <label className="flex flex-col gap-1.5 text-sm font-medium mb-4">
                 Imagem do operador (URL)
-                <input
+                <Input
                   autoComplete="url"
                   inputMode="url"
                   placeholder="https://exemplo.com/avatar.png"
@@ -364,9 +368,9 @@ export default function OperatorProfilePage() {
               </label>
 
               {canEditRole && (
-                <label className="mb-4">
+                <label className="flex flex-col gap-1.5 text-sm font-medium mb-4">
                   Perfil de acesso
-                  <select
+                  <Select
                     value={draft.role}
                     onChange={(event) =>
                       setDraft((currentDraft) => ({
@@ -381,26 +385,25 @@ export default function OperatorProfilePage() {
                         {option.label}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </label>
               )}
 
-              <div className="horizontal-actions">
-                <button
-                  className="ghost-button"
+              <div className="flex gap-2 justify-end">
+                <Button
+                  variant="ghost"
                   type="button"
                   onClick={handleRestoreDraft}
                   disabled={!operator || isProfileBusy}
                 >
                   Restaurar
-                </button>
-                <button
-                  className="primary-button"
+                </Button>
+                <Button
                   type="submit"
                   disabled={isProfileBusy || !operator}
                 >
                   {isSavingProfile ? "Salvando..." : "Salvar perfil"}
-                </button>
+                </Button>
               </div>
             </form>
 
@@ -409,15 +412,15 @@ export default function OperatorProfilePage() {
               onSubmit={(event) => void handlePasswordSubmit(event)}
             >
               <div className="profile-card-heading">
-                <p className="eyebrow">Alterar senha</p>
-                <p className="profile-helper-text">Mínimo de 8 caracteres. A nova senha precisa ser confirmada.</p>
+                <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Alterar senha</p>
+                <p className="text-sm text-muted-foreground">Mínimo de 8 caracteres. A nova senha precisa ser confirmada.</p>
               </div>
 
-              <div className="form-columns three-columns-form mb-4">
-                <label>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <label className="flex flex-col gap-1.5 text-sm font-medium">
                   Senha atual
-                  <div className="pwd-wrap">
-                    <input
+                  <div className="relative flex items-center">
+                    <Input
                       autoComplete="current-password"
                       type={showCurrentPwd ? "text" : "password"}
                       value={passwordDraft.currentPassword}
@@ -427,12 +430,13 @@ export default function OperatorProfilePage() {
                           currentPassword: event.target.value,
                         }))
                       }
+                      className="pr-9"
                       disabled={isPasswordBusy}
                       required
                     />
                     <button
                       type="button"
-                      className="pwd-toggle"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 text-muted-foreground hover:text-foreground transition-colors"
                       onClick={() => setShowCurrentPwd((v) => !v)}
                       aria-label={showCurrentPwd ? "Ocultar senha" : "Mostrar senha"}
                     >
@@ -441,10 +445,10 @@ export default function OperatorProfilePage() {
                   </div>
                 </label>
 
-                <label>
+                <label className="flex flex-col gap-1.5 text-sm font-medium">
                   Nova senha
-                  <div className="pwd-wrap">
-                    <input
+                  <div className="relative flex items-center">
+                    <Input
                       autoComplete="new-password"
                       type={showNewPwd ? "text" : "password"}
                       value={passwordDraft.newPassword}
@@ -454,13 +458,14 @@ export default function OperatorProfilePage() {
                           newPassword: event.target.value,
                         }))
                       }
+                      className="pr-9"
                       disabled={isPasswordBusy}
                       minLength={8}
                       required
                     />
                     <button
                       type="button"
-                      className="pwd-toggle"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 text-muted-foreground hover:text-foreground transition-colors"
                       onClick={() => setShowNewPwd((v) => !v)}
                       aria-label={showNewPwd ? "Ocultar senha" : "Mostrar senha"}
                     >
@@ -469,10 +474,10 @@ export default function OperatorProfilePage() {
                   </div>
                 </label>
 
-                <label>
+                <label className="flex flex-col gap-1.5 text-sm font-medium">
                   Confirmar nova senha
-                  <div className="pwd-wrap">
-                    <input
+                  <div className="relative flex items-center">
+                    <Input
                       autoComplete="new-password"
                       type={showConfirmPwd ? "text" : "password"}
                       value={passwordDraft.confirmNewPassword}
@@ -482,13 +487,14 @@ export default function OperatorProfilePage() {
                           confirmNewPassword: event.target.value,
                         }))
                       }
+                      className="pr-9"
                       disabled={isPasswordBusy}
                       minLength={8}
                       required
                     />
                     <button
                       type="button"
-                      className="pwd-toggle"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 text-muted-foreground hover:text-foreground transition-colors"
                       onClick={() => setShowConfirmPwd((v) => !v)}
                       aria-label={showConfirmPwd ? "Ocultar senha" : "Mostrar senha"}
                     >
@@ -498,35 +504,34 @@ export default function OperatorProfilePage() {
                 </label>
               </div>
 
-              <label className="profile-checkbox-field mb-4">
-                <div className="profile-checkbox-row">
-                  <input
-                    checked={passwordDraft.revokeOtherSessions}
-                    type="checkbox"
-                    onChange={(event) =>
-                      setPasswordDraft((currentDraft) => ({
-                        ...currentDraft,
-                        revokeOtherSessions: event.target.checked,
-                      }))
-                    }
-                    disabled={isPasswordBusy}
-                  />
-                  <span>Revogar outras sessões ao salvar</span>
-                </div>
+              <label className="flex items-center gap-2 text-sm mb-4 cursor-pointer">
+                <input
+                  checked={passwordDraft.revokeOtherSessions}
+                  type="checkbox"
+                  onChange={(event) =>
+                    setPasswordDraft((currentDraft) => ({
+                      ...currentDraft,
+                      revokeOtherSessions: event.target.checked,
+                    }))
+                  }
+                  disabled={isPasswordBusy}
+                  className="h-4 w-4 rounded border border-input accent-primary"
+                />
+                <span>Revogar outras sessões ao salvar</span>
               </label>
 
-              <div className="horizontal-actions">
-                <button
-                  className="ghost-button"
+              <div className="flex gap-2 justify-end">
+                <Button
+                  variant="ghost"
                   type="button"
                   onClick={handleRestorePasswordDraft}
                   disabled={isPasswordBusy}
                 >
                   Limpar
-                </button>
-                <button className="primary-button" type="submit" disabled={isPasswordBusy}>
+                </Button>
+                <Button type="submit" disabled={isPasswordBusy}>
                   {isChangingPassword ? "Atualizando..." : "Atualizar senha"}
-                </button>
+                </Button>
               </div>
             </form>
           </div>
