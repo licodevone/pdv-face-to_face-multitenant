@@ -8,43 +8,43 @@
   color-scheme: dark;
 
   /* --- Base palette (dark) --- */
-  --background: #000000;          /* app base (pure black) */
-  --background-strong: #000000;   /* darkest */
-  --background-soft: #000000;     /* raised base (pure black) */
+  --background: #090d1a;          /* app base (deep navy) */
+  --background-strong: #050816;   /* darkest navy */
+  --background-soft: #101827;     /* raised base */
   --foreground: #f8fafc;          /* near-white text */
 
-  --surface: #000000;             /* card / panel (black — mirrors white in light) */
-  --surface-soft: #0c0c0c;        /* nested card */
-  --surface-muted: #1a1a1a;       /* muted fill */
-  --line: rgba(255, 255, 255, 0.14); /* hairline border (defines black cards) */
+  --surface: #111827;             /* card / panel */
+  --surface-soft: #172033;        /* nested card */
+  --surface-muted: #243149;       /* muted fill */
+  --line: rgba(148, 163, 184, 0.18); /* hairline border */
 
   --text: #f8fafc;                /* primary text */
   --muted: #9aa4b2;               /* secondary text */
 
-  /* --- Accent ramp (dark = neutral gray; pick a palette color to add hue) --- */
-  --accent: #cbd5e1;              /* neutral light gray (totals/highlights) */
-  --accent-strong: #e5e7eb;       /* brighter gray for emphasis */
-  --accent-soft: #94a3b8;         /* eyebrow gray */
+  /* --- Brand blue ramp --- */
+  --accent: #60a5fa;              /* primary brand blue */
+  --accent-strong: #3b82f6;       /* stronger blue (totals) */
+  --accent-soft: #93c5fd;         /* soft / eyebrow blue */
 
   /* --- Semantic status --- */
   --success: #22c55e;             /* available / open */
   --warning: #fbbf24;             /* low stock / attention */
   --danger:  #fb7185;             /* esgotado / errors */
 
-  /* --- Buttons (dark = dark gray) --- */
-  --button-bg: #262626;
-  --button-bg-strong: #171717;
-  --button-hover: #404040;
-  --button-hover-strong: #0a0a0a;
-  --button-border: rgba(255, 255, 255, 0.16);
+  /* --- Buttons --- */
+  --button-bg: #2563eb;
+  --button-bg-strong: #1d4ed8;
+  --button-hover: #3b82f6;
+  --button-hover-strong: #1e40af;
+  --button-border: rgba(96, 165, 250, 0.34);
   --button-text: #ffffff;
 
   /* --- Surfaces scoped to checkout / cart panels --- */
-  --checkout-panel-bg: rgba(0, 0, 0, 0.92);
-  --cart-panel-bg: rgba(0, 0, 0, 0.94);
-  --cart-panel-line: rgba(255, 255, 255, 0.12);
-  --cart-row-zebra-odd: rgba(255, 255, 255, 0.03);
-  --cart-row-zebra-even: rgba(255, 255, 255, 0.055);
+  --checkout-panel-bg: rgba(15, 23, 42, 0.9);
+  --cart-panel-bg: rgba(17, 24, 39, 0.92);
+  --cart-panel-line: rgba(96, 165, 250, 0.18);
+  --cart-row-zebra-odd: rgba(96, 165, 250, 0.055);
+  --cart-row-zebra-even: rgba(96, 165, 250, 0.095);
 
   /* --- Chart accents --- */
   --chart-1: #60a5fa;
@@ -52,145 +52,6 @@
   --chart-3: #a855f7;
   --chart-4: #fbbf24;
   --chart-5: #f472b6;
-}
-
-/* ============================================================
-   ACCENT PALETTES — swappable brand color
-   Set on <html data-accent="emerald|violet|amber|rose">.
-   Works on TOP of data-theme (dark default + light override).
-   Default (no data-accent) = blue, defined in :root above.
-   ============================================================ */
-
-/* --- Blue (dark) — restores the original brand blue on top of the gray default --- */
-html[data-accent="blue"] {
-  --accent: #60a5fa; --accent-strong: #3b82f6; --accent-soft: #93c5fd;
-  --button-bg: #2563eb; --button-bg-strong: #1d4ed8;
-  --button-hover: #3b82f6; --button-hover-strong: #1e40af;
-  --button-border: rgba(96, 165, 250, 0.34);
-  --panel-gradient: linear-gradient(135deg, #2563eb 0%, #4f46e5 56%, #0ea5e9 100%); /* @kind color */
-  --cart-panel-line: rgba(96, 165, 250, 0.18);
-  --cart-row-zebra-odd: rgba(96, 165, 250, 0.055);
-  --cart-row-zebra-even: rgba(96, 165, 250, 0.095);
-}
-/* --- Emerald (dark) --- */
-html[data-accent="emerald"] {
-  --accent: #34d399; --accent-strong: #10b981; --accent-soft: #6ee7b7;
-  --button-bg: #059669; --button-bg-strong: #047857;
-  --button-hover: #10b981; --button-hover-strong: #065f46;
-  --button-border: rgba(52, 211, 153, 0.34);
-  --panel-gradient: linear-gradient(135deg, #059669 0%, #047857 56%, #10b981 100%); /* @kind color */
-  --cart-panel-line: rgba(52, 211, 153, 0.18);
-  --cart-row-zebra-odd: rgba(52, 211, 153, 0.055);
-  --cart-row-zebra-even: rgba(52, 211, 153, 0.095);
-}
-/* --- Violet (dark) --- */
-html[data-accent="violet"] {
-  --accent: #a78bfa; --accent-strong: #8b5cf6; --accent-soft: #c4b5fd;
-  --button-bg: #7c3aed; --button-bg-strong: #6d28d9;
-  --button-hover: #8b5cf6; --button-hover-strong: #5b21b6;
-  --button-border: rgba(167, 139, 250, 0.34);
-  --panel-gradient: linear-gradient(135deg, #7c3aed 0%, #6d28d9 56%, #8b5cf6 100%); /* @kind color */
-  --cart-panel-line: rgba(167, 139, 250, 0.18);
-  --cart-row-zebra-odd: rgba(167, 139, 250, 0.055);
-  --cart-row-zebra-even: rgba(167, 139, 250, 0.095);
-}
-/* --- Amber (dark) --- */
-html[data-accent="amber"] {
-  --accent: #fbbf24; --accent-strong: #f59e0b; --accent-soft: #fcd34d;
-  --button-bg: #d97706; --button-bg-strong: #b45309;
-  --button-hover: #f59e0b; --button-hover-strong: #92400e;
-  --button-border: rgba(251, 191, 36, 0.34);
-  --panel-gradient: linear-gradient(135deg, #d97706 0%, #b45309 56%, #f59e0b 100%); /* @kind color */
-  --cart-panel-line: rgba(251, 191, 36, 0.18);
-  --cart-row-zebra-odd: rgba(251, 191, 36, 0.055);
-  --cart-row-zebra-even: rgba(251, 191, 36, 0.095);
-}
-/* --- Rose (dark) --- */
-html[data-accent="rose"] {
-  --accent: #fb7185; --accent-strong: #f43f5e; --accent-soft: #fda4af;
-  --button-bg: #e11d48; --button-bg-strong: #be123c;
-  --button-hover: #f43f5e; --button-hover-strong: #9f1239;
-  --button-border: rgba(251, 113, 133, 0.34);
-  --panel-gradient: linear-gradient(135deg, #e11d48 0%, #be123c 56%, #f43f5e 100%); /* @kind color */
-  --cart-panel-line: rgba(251, 113, 133, 0.18);
-  --cart-row-zebra-odd: rgba(251, 113, 133, 0.055);
-  --cart-row-zebra-even: rgba(251, 113, 133, 0.095);
-}
-/* --- Cyan (dark) --- */
-html[data-accent="cyan"] {
-  --accent: #22d3ee; --accent-strong: #06b6d4; --accent-soft: #67e8f9;
-  --button-bg: #0891b2; --button-bg-strong: #0e7490;
-  --button-hover: #06b6d4; --button-hover-strong: #155e75;
-  --button-border: rgba(34, 211, 238, 0.34);
-  --panel-gradient: linear-gradient(135deg, #0891b2 0%, #0e7490 56%, #06b6d4 100%); /* @kind color */
-  --cart-panel-line: rgba(34, 211, 238, 0.18);
-  --cart-row-zebra-odd: rgba(34, 211, 238, 0.055);
-  --cart-row-zebra-even: rgba(34, 211, 238, 0.095);
-}
-/* --- Indigo (dark) --- */
-html[data-accent="indigo"] {
-  --accent: #818cf8; --accent-strong: #6366f1; --accent-soft: #a5b4fc;
-  --button-bg: #4f46e5; --button-bg-strong: #4338ca;
-  --button-hover: #6366f1; --button-hover-strong: #3730a3;
-  --button-border: rgba(129, 140, 248, 0.34);
-  --panel-gradient: linear-gradient(135deg, #4f46e5 0%, #4338ca 56%, #6366f1 100%); /* @kind color */
-  --cart-panel-line: rgba(129, 140, 248, 0.18);
-  --cart-row-zebra-odd: rgba(129, 140, 248, 0.055);
-  --cart-row-zebra-even: rgba(129, 140, 248, 0.095);
-}
-/* --- Orange (dark) --- */
-html[data-accent="orange"] {
-  --accent: #fb923c; --accent-strong: #f97316; --accent-soft: #fdba74;
-  --button-bg: #ea580c; --button-bg-strong: #c2410c;
-  --button-hover: #f97316; --button-hover-strong: #9a3412;
-  --button-border: rgba(251, 146, 60, 0.34);
-  --panel-gradient: linear-gradient(135deg, #ea580c 0%, #c2410c 56%, #f97316 100%); /* @kind color */
-  --cart-panel-line: rgba(251, 146, 60, 0.18);
-  --cart-row-zebra-odd: rgba(251, 146, 60, 0.055);
-  --cart-row-zebra-even: rgba(251, 146, 60, 0.095);
-}
-/* --- Fuchsia (dark) --- */
-html[data-accent="fuchsia"] {
-  --accent: #e879f9; --accent-strong: #d946ef; --accent-soft: #f0abfc;
-  --button-bg: #c026d3; --button-bg-strong: #a21caf;
-  --button-hover: #d946ef; --button-hover-strong: #86198f;
-  --button-border: rgba(232, 121, 249, 0.34);
-  --panel-gradient: linear-gradient(135deg, #c026d3 0%, #a21caf 56%, #d946ef 100%); /* @kind color */
-  --cart-panel-line: rgba(232, 121, 249, 0.18);
-  --cart-row-zebra-odd: rgba(232, 121, 249, 0.055);
-  --cart-row-zebra-even: rgba(232, 121, 249, 0.095);
-}
-/* --- Teal (dark) --- */
-html[data-accent="teal"] {
-  --accent: #2dd4bf; --accent-strong: #14b8a6; --accent-soft: #5eead4;
-  --button-bg: #0d9488; --button-bg-strong: #0f766e;
-  --button-hover: #14b8a6; --button-hover-strong: #115e59;
-  --button-border: rgba(45, 212, 191, 0.34);
-  --panel-gradient: linear-gradient(135deg, #0d9488 0%, #0f766e 56%, #14b8a6 100%); /* @kind color */
-  --cart-panel-line: rgba(45, 212, 191, 0.18);
-  --cart-row-zebra-odd: rgba(45, 212, 191, 0.055);
-  --cart-row-zebra-even: rgba(45, 212, 191, 0.095);
-}
-/* --- Black / OLED (dark) — pure-black surfaces, blue accent kept --- */
-html[data-accent="black"] {
-  --background: #000000;
-  --background-strong: #000000;
-  --background-soft: #07090d;
-  --surface: #0b0d12;
-  --surface-soft: #14171d;
-  --surface-muted: #1d212a;
-  --line: rgba(255, 255, 255, 0.10);
-  --accent: #60a5fa; --accent-strong: #3b82f6; --accent-soft: #93c5fd;
-  --button-bg: #1d4ed8; --button-bg-strong: #1e3a8a;
-  --button-hover: #2563eb; --button-hover-strong: #172554;
-  --button-border: rgba(96, 165, 250, 0.28);
-  --panel-gradient: linear-gradient(135deg, #14181f 0%, #0a0c11 60%, #000000 100%); /* @kind color */
-  --shadow: 0 24px 70px rgba(0, 0, 0, 0.6), 0 10px 28px rgba(0, 0, 0, 0.5);
-  --checkout-panel-bg: rgba(8, 10, 14, 0.92);
-  --cart-panel-bg: rgba(8, 10, 14, 0.94);
-  --cart-panel-line: rgba(96, 165, 250, 0.16);
-  --cart-row-zebra-odd: rgba(255, 255, 255, 0.03);
-  --cart-row-zebra-even: rgba(255, 255, 255, 0.055);
 }
 
 html[data-theme="light"] {
@@ -234,99 +95,4 @@ html[data-theme="light"] {
   --chart-3: #7c3aed;
   --chart-4: #f59e0b;
   --chart-5: #ec4899;
-}
-
-/* ============================================================
-   ACCENT PALETTES — LIGHT MODE overrides
-   (data-theme="light" + data-accent="…")
-   ============================================================ */
-html[data-theme="light"][data-accent="emerald"] {
-  --accent: #059669; --accent-strong: #047857; --accent-soft: #34d399;
-  --button-bg: #059669; --button-bg-strong: #047857;
-  --button-hover: #10b981; --button-hover-strong: #065f46;
-  --button-border: rgba(5, 150, 105, 0.22);
-  --panel-gradient: linear-gradient(135deg, #059669 0%, #047857 56%, #10b981 100%); /* @kind color */
-  --cart-panel-line: rgba(5, 150, 105, 0.14);
-  --cart-row-zebra-odd: rgba(5, 150, 105, 0.035);
-  --cart-row-zebra-even: rgba(5, 150, 105, 0.065);
-}
-html[data-theme="light"][data-accent="violet"] {
-  --accent: #7c3aed; --accent-strong: #6d28d9; --accent-soft: #a78bfa;
-  --button-bg: #7c3aed; --button-bg-strong: #6d28d9;
-  --button-hover: #8b5cf6; --button-hover-strong: #5b21b6;
-  --button-border: rgba(124, 58, 237, 0.22);
-  --panel-gradient: linear-gradient(135deg, #7c3aed 0%, #6d28d9 56%, #8b5cf6 100%); /* @kind color */
-  --cart-panel-line: rgba(124, 58, 237, 0.14);
-  --cart-row-zebra-odd: rgba(124, 58, 237, 0.035);
-  --cart-row-zebra-even: rgba(124, 58, 237, 0.065);
-}
-html[data-theme="light"][data-accent="amber"] {
-  --accent: #d97706; --accent-strong: #b45309; --accent-soft: #f59e0b;
-  --button-bg: #d97706; --button-bg-strong: #b45309;
-  --button-hover: #f59e0b; --button-hover-strong: #92400e;
-  --button-border: rgba(217, 119, 6, 0.22);
-  --panel-gradient: linear-gradient(135deg, #d97706 0%, #b45309 56%, #f59e0b 100%); /* @kind color */
-  --cart-panel-line: rgba(217, 119, 6, 0.14);
-  --cart-row-zebra-odd: rgba(217, 119, 6, 0.035);
-  --cart-row-zebra-even: rgba(217, 119, 6, 0.065);
-}
-html[data-theme="light"][data-accent="rose"] {
-  --accent: #e11d48; --accent-strong: #be123c; --accent-soft: #fb7185;
-  --button-bg: #e11d48; --button-bg-strong: #be123c;
-  --button-hover: #f43f5e; --button-hover-strong: #9f1239;
-  --button-border: rgba(225, 29, 72, 0.22);
-  --panel-gradient: linear-gradient(135deg, #e11d48 0%, #be123c 56%, #f43f5e 100%); /* @kind color */
-  --cart-panel-line: rgba(225, 29, 72, 0.14);
-  --cart-row-zebra-odd: rgba(225, 29, 72, 0.035);
-  --cart-row-zebra-even: rgba(225, 29, 72, 0.065);
-}
-html[data-theme="light"][data-accent="cyan"] {
-  --accent: #0891b2; --accent-strong: #0e7490; --accent-soft: #22d3ee;
-  --button-bg: #0891b2; --button-bg-strong: #0e7490;
-  --button-hover: #06b6d4; --button-hover-strong: #155e75;
-  --button-border: rgba(8, 145, 178, 0.22);
-  --panel-gradient: linear-gradient(135deg, #0891b2 0%, #0e7490 56%, #06b6d4 100%); /* @kind color */
-  --cart-panel-line: rgba(8, 145, 178, 0.14);
-  --cart-row-zebra-odd: rgba(8, 145, 178, 0.035);
-  --cart-row-zebra-even: rgba(8, 145, 178, 0.065);
-}
-html[data-theme="light"][data-accent="indigo"] {
-  --accent: #4f46e5; --accent-strong: #4338ca; --accent-soft: #818cf8;
-  --button-bg: #4f46e5; --button-bg-strong: #4338ca;
-  --button-hover: #6366f1; --button-hover-strong: #3730a3;
-  --button-border: rgba(79, 70, 229, 0.22);
-  --panel-gradient: linear-gradient(135deg, #4f46e5 0%, #4338ca 56%, #6366f1 100%); /* @kind color */
-  --cart-panel-line: rgba(79, 70, 229, 0.14);
-  --cart-row-zebra-odd: rgba(79, 70, 229, 0.035);
-  --cart-row-zebra-even: rgba(79, 70, 229, 0.065);
-}
-html[data-theme="light"][data-accent="orange"] {
-  --accent: #ea580c; --accent-strong: #c2410c; --accent-soft: #fb923c;
-  --button-bg: #ea580c; --button-bg-strong: #c2410c;
-  --button-hover: #f97316; --button-hover-strong: #9a3412;
-  --button-border: rgba(234, 88, 12, 0.22);
-  --panel-gradient: linear-gradient(135deg, #ea580c 0%, #c2410c 56%, #f97316 100%); /* @kind color */
-  --cart-panel-line: rgba(234, 88, 12, 0.14);
-  --cart-row-zebra-odd: rgba(234, 88, 12, 0.035);
-  --cart-row-zebra-even: rgba(234, 88, 12, 0.065);
-}
-html[data-theme="light"][data-accent="fuchsia"] {
-  --accent: #c026d3; --accent-strong: #a21caf; --accent-soft: #e879f9;
-  --button-bg: #c026d3; --button-bg-strong: #a21caf;
-  --button-hover: #d946ef; --button-hover-strong: #86198f;
-  --button-border: rgba(192, 38, 211, 0.22);
-  --panel-gradient: linear-gradient(135deg, #c026d3 0%, #a21caf 56%, #d946ef 100%); /* @kind color */
-  --cart-panel-line: rgba(192, 38, 211, 0.14);
-  --cart-row-zebra-odd: rgba(192, 38, 211, 0.035);
-  --cart-row-zebra-even: rgba(192, 38, 211, 0.065);
-}
-html[data-theme="light"][data-accent="teal"] {
-  --accent: #0d9488; --accent-strong: #0f766e; --accent-soft: #2dd4bf;
-  --button-bg: #0d9488; --button-bg-strong: #0f766e;
-  --button-hover: #14b8a6; --button-hover-strong: #115e59;
-  --button-border: rgba(13, 148, 136, 0.22);
-  --panel-gradient: linear-gradient(135deg, #0d9488 0%, #0f766e 56%, #14b8a6 100%); /* @kind color */
-  --cart-panel-line: rgba(13, 148, 136, 0.14);
-  --cart-row-zebra-odd: rgba(13, 148, 136, 0.035);
-  --cart-row-zebra-even: rgba(13, 148, 136, 0.065);
 }
