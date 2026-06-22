@@ -33,7 +33,7 @@ module.exports = {
       name: '@electron-forge/maker-wix',
       config: {
         language: 1046,              // 1046 = Português (Brasil); 1033 = inglês
-        manufacturer: 'Sua Empresa', // troque pelo nome real
+        manufacturer: 'PDV Face Delivery', // fabricante exibido em "Programas e Recursos"
         name: 'PDV Face Delivery',   // nome exibido no instalador
         // ui: { chooseDirectory: true }, // opcional: deixa o usuário escolher a pasta
       },
