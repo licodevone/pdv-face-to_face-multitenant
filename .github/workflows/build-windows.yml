@@ -44,7 +44,7 @@ jobs:
           cache: 'pnpm'
 
       - name: Instalar dependências (raiz)
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --config.allow-scripts=true
 
       # Garante que o Prisma gere os clients/tipagens do Windows antes de tentar compilar o código
       - name: Gerar artefatos do Prisma ORM
