@@ -60,6 +60,20 @@ jobs:
           # DATABASE_URL: ${{ secrets.DATABASE_URL }}
           # NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
 
+      - name: Verificar binário do Electron (diagnóstico)
+        if: always()
+        shell: pwsh
+        run: |
+          echo "=== node_modules/electron existe? ==="
+          Test-Path node_modules/electron
+          echo "=== dist/electron.exe existe? ==="
+          Test-Path node_modules/electron/dist/electron.exe
+          echo "=== conteudo de node_modules/electron/dist ==="
+          Get-ChildItem node_modules/electron/dist -ErrorAction SilentlyContinue | Select-Object Name, Length | Format-Table -AutoSize
+          echo "=== electron --version ==="
+          pnpm exec electron --version
+          echo "exit: $LASTEXITCODE"
+
       - name: Empacotar app (diagnóstico isolado)
         if: always()
         env:
