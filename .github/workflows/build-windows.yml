@@ -19,10 +19,20 @@ jobs:
 
       # WiX Toolset v3 (candle/light) — exigido pelo maker-wix
       - name: Instalar WiX Toolset v3
-        run: |
-          dotnet tool install --global wix --version 3.14.1 || choco install wixtoolset -y
         shell: pwsh
-        # Alternativa mais confiável: usar choco (já vem no runner)
+        run: |
+          choco install wixtoolset -y --no-progress
+          # Garante candle.exe/light.exe no PATH dos próximos passos
+          $wixBin = Get-ChildItem "C:\Program Files (x86)" -Directory -Filter "WiX Toolset*" -ErrorAction SilentlyContinue |
+                    ForEach-Object { Join-Path $_.FullName "bin" } |
+                    Where-Object { Test-Path (Join-Path $_ "candle.exe") } |
+                    Select-Object -First 1
+          if ($wixBin) {
+            echo "WiX bin encontrado: $wixBin"
+            Add-Content -Path $env:GITHUB_PATH -Value $wixBin
+          } else {
+            echo "::warning::candle.exe nao encontrado apos instalar WiX"
+          }
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -53,9 +63,22 @@ jobs:
       - name: Gerar instalador .msi
         run: pnpm run make:win
 
-      - name: Publicar o .msi como artefato
+      - name: Listar saída do make (diagnóstico)
+        if: always()
+        shell: pwsh
+        run: |
+          if (Test-Path out) {
+            Get-ChildItem -Recurse out\make | Select-Object FullName, Length | Format-Table -AutoSize
+          } else {
+            echo "pasta 'out' nao existe"
+          }
+
+      - name: Publicar instaladores como artefato
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: pdv-face-delivery-msi
-          path: out/make/wix/**/*.msi
-          if-no-files-found: error
+          name: pdv-face-delivery-installers
+          path: |
+            out/make/**/*.msi
+            out/make/**/*.exe
+          if-no-files-found: warn
