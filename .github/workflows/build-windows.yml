@@ -61,7 +61,12 @@ jobs:
           # NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
 
       - name: Gerar instalador .msi
-        run: pnpm run make:win
+        shell: pwsh
+        run: |
+          $env:DEBUG = "electron-forge:*"
+          pnpm run make:win
+          Write-Host "make:win exit code = $LASTEXITCODE"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Listar saída do make (diagnóstico)
         if: always()
