@@ -61,67 +61,81 @@ app.setErrorHandler((error, request, reply) => {
   });
 });
 
-await app.register(cors, {
-  origin: trustedOrigins,
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: [
-    "Content-Type",
-    "Authorization",
-    "X-Requested-With",
-    "X-Tenant-Id",
-    "X-Tenant-Slug",
-  ],
-  credentials: true,
-  maxAge: 86_400,
+// Nova função principal para empacotar os comandos assíncronos de forma segura para CommonJS (CJS)
+async function startServer() {
+  try {
+    await app.register(cors, {
+      origin: trustedOrigins,
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+      allowedHeaders: [
+        "Content-Type",
+        "Authorization",
+        "X-Requested-With",
+        "X-Tenant-Id",
+        "X-Tenant-Slug",
+      ],
+      credentials: true,
+      maxAge: 86_400,
+    });
+
+    await app.register(swagger, {
+      openapi: {
+        info: {
+          title: "PDV Face Delivery API",
+          description: "API REST para frente de caixa, estoque, caixa, delivery e relatórios.",
+          version: "0.1.0",
+        },
+        servers: [{ url: env.BETTER_AUTH_URL }],
+      },
+      transform: jsonSchemaTransform,
+    });
+
+    await app.register(swaggerUi, {
+      routePrefix: "/docs",
+    });
+
+    app.get("/health", async () => ({ status: "ok" }));
+    app.get("/", async () => ({
+      name: "PDV Face Delivery API",
+      status: "ok",
+      links: {
+        swagger: "/docs",
+        scalar: "/reference",
+        openapiJson: "/openapi.json",
+        betterAuthScalar: "/api/auth/reference",
+        betterAuthOpenapiJson: "/api/auth/open-api/generate-schema",
+      },
+    }));
+    app.get("/openapi.json", async () => app.swagger());
+
+    await app.register(fastifyApiReference, {
+      routePrefix: "/reference",
+      configuration: {
+        url: "/openapi.json",
+      },
+    });
+
+    await app.register(authRoutes, { prefix: "/api/auth" });
+    await app.register(tenantsRoutes, { prefix: "/tenants" });
+    await app.register(categoriesRoutes, { prefix: "/categories" });
+    await app.register(productsRoutes, { prefix: "/products" });
+    await app.register(customersRoutes, { prefix: "/customers" });
+    await app.register(operatorsRoutes, { prefix: "/operators" });
+    await app.register(cashRoutes, { prefix: "/cash" });
+    await app.register(salesRoutes, { prefix: "/sales" });
+    await app.register(deliveryRoutes, { prefix: "/delivery-orders" });
+    await app.register(signaturesRoutes, { prefix: "/signatures" });
+    await app.register(reportsRoutes, { prefix: "/reports" });
+
+    await app.listen({ port: env.PORT, host: env.HOST });
+    console.log(`🚀 Servidor rodando com sucesso em http://${env.HOST}:${env.PORT}`);
+  } catch (err) {
+    app.log.error(err);
+    process.exit(1);
+  }
+}
+
+// Inicializa a execução do servidor sem gerar "Top-level await" na compilação
+startServer().catch((err) => {
+  console.error("Erro fatal ao iniciar a aplicação:", err);
 });
-
-await app.register(swagger, {
-  openapi: {
-    info: {
-      title: "PDV Face Delivery API",
-      description: "API REST para frente de caixa, estoque, caixa, delivery e relatórios.",
-      version: "0.1.0",
-    },
-    servers: [{ url: env.BETTER_AUTH_URL }],
-  },
-  transform: jsonSchemaTransform,
-});
-
-await app.register(swaggerUi, {
-  routePrefix: "/docs",
-});
-
-app.get("/health", async () => ({ status: "ok" }));
-app.get("/", async () => ({
-  name: "PDV Face Delivery API",
-  status: "ok",
-  links: {
-    swagger: "/docs",
-    scalar: "/reference",
-    openapiJson: "/openapi.json",
-    betterAuthScalar: "/api/auth/reference",
-    betterAuthOpenapiJson: "/api/auth/open-api/generate-schema",
-  },
-}));
-app.get("/openapi.json", async () => app.swagger());
-
-await app.register(fastifyApiReference, {
-  routePrefix: "/reference",
-  configuration: {
-    url: "/openapi.json",
-  },
-});
-
-await app.register(authRoutes, { prefix: "/api/auth" });
-await app.register(tenantsRoutes, { prefix: "/tenants" });
-await app.register(categoriesRoutes, { prefix: "/categories" });
-await app.register(productsRoutes, { prefix: "/products" });
-await app.register(customersRoutes, { prefix: "/customers" });
-await app.register(operatorsRoutes, { prefix: "/operators" });
-await app.register(cashRoutes, { prefix: "/cash" });
-await app.register(salesRoutes, { prefix: "/sales" });
-await app.register(deliveryRoutes, { prefix: "/delivery-orders" });
-await app.register(signaturesRoutes, { prefix: "/signatures" });
-await app.register(reportsRoutes, { prefix: "/reports" });
-
-await app.listen({ port: env.PORT, host: env.HOST });
