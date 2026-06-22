@@ -22,7 +22,7 @@
     "dev:desktop": "tsx scripts/dev-desktop.ts",
     "build": "pnpm build:backend && pnpm build:frontend && pnpm build:desktop",
     "build:backend": "tsup src/server.ts --format cjs --target es2024 --sourcemap --clean",
-    "build:frontend": "NODE_ENV=production next build frontend",
+    "build:frontend": "next build frontend",
     "build:desktop": "tsc -p desktop/tsconfig.json",
     "start:frontend": "next start frontend",
     "eslint": "eslint .",
