@@ -42,35 +42,32 @@ jobs:
           node-version: 24
           cache: 'pnpm'
 
-      - name: Instalar dependências (raiz)
-        # Instalamos ignorando scripts automáticos para evitar bloqueios de segurança do pnpm v10 no CI
-        run: pnpm install --frozen-lockfile --ignore-scripts --config.package-import-method=copy
-
-      - name: Forçar Download Limpo do Binário do Electron
+      - name: Configurar pnpm para modo Isolado (Hoisted)
         shell: pwsh
-        env:
-          ELECTRON_SKIP_BINARY_DOWNLOAD: ""
         run: |
-          # Limpa caches corrompidos que o pnpm traz do storage compartilhado
-          Remove-Item -Recurse -Force node_modules/electron/dist -ErrorAction SilentlyContinue
-          Remove-Item -Force node_modules/electron/path.txt -ErrorAction SilentlyContinue
-          
-          # Dispara o script oficial de instalação do Electron isoladamente via Node.js
-          node node_modules/electron/install.js
-          
-          # Validação de segurança: se falhar o download, o pipeline para aqui com aviso claro
+          # Cria um arquivo .npmrc temporário que desativa o cache virtual do pnpm v10
+          # Isso faz o node_modules herdar uma estrutura real compatível com o instalador do Electron
+          Set-Content -Path .npmrc -Value "node-linker=hoisted`nside-effects-cache=false"
+
+      - name: Instalar dependências (raiz)
+        # O pnpm agora vai baixar e instalar o Electron de forma real, executando seus scripts nativos
+        run: pnpm install --frozen-lockfile --config.allow-scripts=true
+
+      - name: Validar Binário do Electron
+        shell: pwsh
+        run: |
+          # Checagem imediata para garantir que o hoisting funcionou e o arquivo existe
           $exePresente = Test-Path node_modules/electron/dist/electron.exe
           if (-not $exePresente) {
-            Write-Error "::error::O arquivo electron.exe nao foi baixado pelo install.js!"
+            Write-Error "::error::O arquivo electron.exe continua ausente após o hoisting!"
             exit 1
           } else {
-            Write-Host "✅ Binário electron.exe validado com sucesso!"
+            Write-Host "✅ Sucesso! Binário electron.exe encontrado e pronto."
           }
 
       - name: Gerar artefatos do Prisma ORM
         run: pnpm db:generate
         env:
-          # String temporária necessária apenas para validar a compilação das tipagens do Prisma
           DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/pdv_db"
 
       - name: Build (backend + frontend + desktop)
