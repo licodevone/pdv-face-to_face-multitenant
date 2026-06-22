@@ -60,13 +60,23 @@ jobs:
           # DATABASE_URL: ${{ secrets.DATABASE_URL }}
           # NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
 
-      - name: Gerar instalador .msi
+      - name: Empacotar app (diagnóstico isolado)
+        if: always()
+        env:
+          DEBUG: electron-forge:*
         shell: pwsh
         run: |
-          $env:DEBUG = "electron-forge:*"
+          pnpm exec electron-forge package -c forge.config.cjs
+          Write-Host "=== package exit code = $LASTEXITCODE ==="
+          Get-ChildItem -Recurse out -ErrorAction SilentlyContinue | Select-Object FullName | Format-Table -AutoSize
+
+      - name: Gerar instalador .msi
+        env:
+          DEBUG: electron-forge:*
+        shell: pwsh
+        run: |
           pnpm run make:win
-          Write-Host "make:win exit code = $LASTEXITCODE"
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Write-Host "=== make exit code = $LASTEXITCODE ==="
 
       - name: Listar saída do make (diagnóstico)
         if: always()
