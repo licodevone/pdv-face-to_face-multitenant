@@ -2,40 +2,43 @@ const { FusesPlugin } = require('@electron-forge/plugin-fuses');
 const { FuseV1Options, FuseVersion } = require('@electron/fuses');
 
 module.exports = {
-  // Bloco de configuração de empacotamento ajustado
   packagerConfig: {
     asar: true,
-    // ESSA LINHA DIZ AO FORGE PARA INCLUIR A PASTA DIST INTEIRA DENTRO DO PACOTE FINAL
+    // INCLUI A PASTA DIST E A PASTA PRISMA FORA DO ASAR PARA O BACKEND FUNCIONAR EM PRODUÇÃO
     extraResource: [
-      './dist'
+      './dist',
+      './prisma'
     ],
   },
   rebuildConfig: {},
   makers: [
-    // Mantém a geração do arquivo .zip portátil para Windows, Linux e Mac
+    // Geração do arquivo .zip portátil para Windows, Linux e Mac
     {
       name: '@electron-forge/maker-zip',
       platforms: ['darwin', 'linux', 'win32'], 
     },
-    // Descomentei o instalador padrão do Windows caso você decida gerar o .exe instalador formal futuramente
+    // Instalador padrão do Windows (.exe)
     {
       name: '@electron-forge/maker-squirrel',
       config: {
         name: "pdv-face-delivery"
       },
     },
-    // Mantém o instalador oficial do Linux Ubuntu/Debian
+    // Instalador oficial do Linux Ubuntu/Debian
     {
       name: '@electron-forge/maker-deb',
       config: {},
     },
+    // Gerador oficial do instalador .MSI do Windows
     {
       name: '@electron-forge/maker-wix',
       config: {
-        language: 1046,              // 1046 = Português (Brasil); 1033 = inglês
-        manufacturer: 'PDV Face Delivery', // fabricante exibido em "Programas e Recursos"
-        name: 'PDV Face Delivery',   // nome exibido no instalador
-        // ui: { chooseDirectory: true }, // opcional: deixa o usuário escolher a pasta
+        language: 1046,                    // 1046 = Português (Brasil)
+        manufacturer: 'PDV Face Delivery', // Fabricante exibido no Windows
+        name: 'PDV Face Delivery',         // Nome exibido no instalador
+        ui: { 
+          chooseDirectory: true            // Permite ao cliente escolher a pasta de instalação
+        }, 
       },
     }
   ],
@@ -44,16 +47,18 @@ module.exports = {
       name: '@electron-forge/plugin-auto-unpack-natives',
       config: {},
     },
-    // Fuses are used to enable/disable various Electron functionality
-    // at package time, before code signing the application
-    new FusesPlugin({
-      version: FuseVersion.V1,
-      [FuseV1Options.RunAsNode]: false,
-      [FuseV1Options.EnableCookieEncryption]: true,
-      [FuseV1Options.EnableNodeOptionsEnvironmentVariable]: false,
-      [FuseV1Options.EnableNodeCliInspectArguments]: false,
-      [FuseV1Options.EnableEmbeddedAsarIntegrityValidation]: true,
-      [FuseV1Options.OnlyLoadAppFromAsar]: true,
-    }),
+    // Ajustado para o formato de declaração padrão de plugins do Electron Forge em CommonJS
+    {
+      name: '@electron-forge/plugin-fuses',
+      config: {
+        version: FuseVersion.V1,
+        [FuseV1Options.RunAsNode]: false,
+        [FuseV1Options.EnableCookieEncryption]: true,
+        [FuseV1Options.EnableNodeOptionsEnvironmentVariable]: false,
+        [FuseV1Options.EnableNodeCliInspectArguments]: false,
+        [FuseV1Options.EnableEmbeddedAsarIntegrityValidation]: true,
+        [FuseV1Options.OnlyLoadAppFromAsar]: true,
+      }
+    },
   ],
 };

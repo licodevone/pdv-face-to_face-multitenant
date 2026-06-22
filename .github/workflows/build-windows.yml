@@ -1,17 +1,14 @@
-
 name: Build Windows MSI
 
 on:
-  # Roda quando você criar uma tag de versão (ex.: v0.1.0)
   push:
     tags:
       - 'v*'
-  # Permite disparar manualmente pela aba "Actions" do GitHub
   workflow_dispatch:
 
 jobs:
   build-msi:
-    runs-on: windows-latest   # <- precisa ser Windows por causa do WiX
+    runs-on: windows-latest
 
     steps:
       - name: Checkout do código
@@ -34,6 +31,7 @@ jobs:
             echo "::warning::candle.exe nao encontrado apos instalar WiX"
           }
 
+       # Setup do pnpm e Node
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -48,13 +46,14 @@ jobs:
       - name: Instalar dependências (raiz)
         run: pnpm install --frozen-lockfile
 
-      - name: Instalar dependências (frontend)
-        run: pnpm install --frozen-lockfile
-        working-directory: frontend
+      # Garante que o Prisma gere os clients/tipagens do Windows antes de tentar compilar o código
+      - name: Gerar artefatos do Prisma ORM
+        run: pnpm db:generate
+        env:
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/pdv_db"
 
       # O store do pnpm pode restaurar o Electron com dist/ parcial (so 'locales')
       # e o marcador path.txt, fazendo o install.js pular o download.
-      # Apagamos esses restos e forcamos um download limpo do binario.
       - name: Garantir binário do Electron
         shell: pwsh
         run: |
@@ -72,16 +71,15 @@ jobs:
           echo "electron.exe presente? $ok"
           if (-not $ok) { echo "::error::Falha ao baixar o binario do Electron"; exit 1 }
 
+      # Roda o build unificado do seu package.json (backend + frontend + desktop)
       - name: Build (backend + frontend + desktop)
         run: pnpm build
         env:
           NODE_ENV: production
-          # Coloque aqui as variáveis que o `next build` precisa em build-time:
-          # DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          # NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
 
-      - name: Verificar binário do Electron (diagnóstico)
-        if: always()
+      # Roda apenas se houver falha no build acima para te ajudar a debugar
+      - name: Verificar binário do Electron (diagnóstico em falha)
+        if: failure()
         shell: pwsh
         run: |
           echo "=== node_modules/electron existe? ==="
@@ -94,18 +92,8 @@ jobs:
           pnpm exec electron --version
           echo "exit: $LASTEXITCODE"
 
-      - name: Empacotar app (diagnóstico isolado)
-        if: always()
-        env:
-          DEBUG: electron-forge:*
-        shell: pwsh
-        run: |
-          pnpm exec electron-forge package
-          Write-Host "=== package exit code = $LASTEXITCODE ==="
-          Get-ChildItem -Recurse out -ErrorAction SilentlyContinue | Select-Object FullName | Format-Table -AutoSize
-
+      # Removido o 'if: always()' para impedir que gere pacotes corrompidos caso o build falhe
       - name: Gerar instalador .msi
-        if: always()
         env:
           DEBUG: electron-forge:*
         shell: pwsh
@@ -123,12 +111,13 @@ jobs:
             echo "pasta 'out' nao existe"
           }
 
+      # Só publica os artefatos se o fluxo tiver sucesso até o final
       - name: Publicar instaladores como artefato
-        if: always()
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: pdv-face-delivery-installers
           path: |
             out/make/**/*.msi
             out/make/**/*.exe
-          if-no-files-found: warn
+          if-no-files-found: error
