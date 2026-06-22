@@ -1,0 +1,57 @@
+
+name: Build Windows MSI
+
+on:
+  # Roda quando você criar uma tag de versão (ex.: v0.1.0)
+  push:
+    tags:
+      - 'v*'
+  # Permite disparar manualmente pela aba "Actions" do GitHub
+  workflow_dispatch:
+
+jobs:
+  build-msi:
+    runs-on: windows-latest   # <- precisa ser Windows por causa do WiX
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      # WiX Toolset v3 (candle/light) — exigido pelo maker-wix
+      - name: Instalar WiX Toolset v3
+        run: |
+          dotnet tool install --global wix --version 3.14.1 || choco install wixtoolset -y
+        shell: pwsh
+        # Alternativa mais confiável: usar choco (já vem no runner)
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.0.0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'pnpm'
+
+      - name: Instalar dependências
+        run: pnpm install --frozen-lockfile
+
+      - name: Build (backend + frontend + desktop)
+        run: pnpm build
+        env:
+          NODE_ENV: production
+          # Coloque aqui as variáveis que o `next build` precisa em build-time:
+          # DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          # NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+
+      - name: Gerar instalador .msi
+        run: pnpm run make:win
+
+      - name: Publicar o .msi como artefato
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdv-face-delivery-msi
+          path: out/make/wix/**/*.msi
+          if-no-files-found: error
