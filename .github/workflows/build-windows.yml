@@ -35,8 +35,12 @@ jobs:
           node-version: 24
           cache: 'pnpm'
 
-      - name: Instalar dependências
+      - name: Instalar dependências (raiz)
         run: pnpm install --frozen-lockfile
+
+      - name: Instalar dependências (frontend)
+        run: pnpm install --frozen-lockfile
+        working-directory: frontend
 
       - name: Build (backend + frontend + desktop)
         run: pnpm build
