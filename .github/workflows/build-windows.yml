@@ -4,34 +4,33 @@ on:
   push:
     tags:
       - 'v*'
-  workflow_dispatch:
+  workflow_dispatch: # Permite disparar manualmente pela aba "Actions" no GitHub
 
 jobs:
   build-msi:
-    runs-on: windows-latest
+    runs-on: windows-latest   # Necessário Windows nativo para rodar o WiX Toolset
 
     steps:
       - name: Checkout do código
         uses: actions/checkout@v4
 
-      # WiX Toolset v3 (candle/light) — exigido pelo maker-wix
+      # Instala o WiX Toolset v3 exigido pelo @electron-forge/maker-wix
       - name: Instalar WiX Toolset v3
         shell: pwsh
         run: |
           choco install wixtoolset -y --no-progress
-          # Garante candle.exe/light.exe no PATH dos próximos passos
+          # Localiza e injeta o candle.exe/light.exe no PATH dos passos seguintes
           $wixBin = Get-ChildItem "C:\Program Files (x86)" -Directory -Filter "WiX Toolset*" -ErrorAction SilentlyContinue |
                     ForEach-Object { Join-Path $_.FullName "bin" } |
                     Where-Object { Test-Path (Join-Path $_ "candle.exe") } |
                     Select-Object -First 1
           if ($wixBin) {
-            echo "WiX bin encontrado: $wixBin"
+            Write-Host "WiX bin encontrado em: $wixBin"
             Add-Content -Path $env:GITHUB_PATH -Value $wixBin
           } else {
-            echo "::warning::candle.exe nao encontrado apos instalar WiX"
+            Write-Warning "candle.exe nao encontrado apos instalar WiX"
           }
 
-       # Setup do pnpm e Node
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -44,75 +43,61 @@ jobs:
           cache: 'pnpm'
 
       - name: Instalar dependências (raiz)
-        run: pnpm install --frozen-lockfile --config.allow-scripts=true
+        # Instalamos ignorando scripts automáticos para evitar bloqueios de segurança do pnpm v10 no CI
+        run: pnpm install --frozen-lockfile --ignore-scripts
 
-      # Garante que o Prisma gere os clients/tipagens do Windows antes de tentar compilar o código
+      - name: Forçar Download Limpo do Binário do Electron
+        shell: pwsh
+        env:
+          ELECTRON_SKIP_BINARY_DOWNLOAD: ""
+        run: |
+          # Limpa caches corrompidos que o pnpm traz do storage compartilhado
+          Remove-Item -Recurse -Force node_modules/electron/dist -ErrorAction SilentlyContinue
+          Remove-Item -Force node_modules/electron/path.txt -ErrorAction SilentlyContinue
+          
+          # Dispara o script oficial de instalação do Electron isoladamente via Node.js
+          node node_modules/electron/install.js
+          
+          # Validação de segurança: se falhar o download, o pipeline para aqui com aviso claro
+          $exePresente = Test-Path node_modules/electron/dist/electron.exe
+          if (-not $exePresente) {
+            Write-Error "::error::O arquivo electron.exe nao foi baixado pelo install.js!"
+            exit 1
+          } else {
+            Write-Host "✅ Binário electron.exe validado com sucesso!"
+          }
+
       - name: Gerar artefatos do Prisma ORM
         run: pnpm db:generate
         env:
+          # String temporária necessária apenas para validar a compilação das tipagens do Prisma
           DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/pdv_db"
 
-      # O store do pnpm pode restaurar o Electron com dist/ parcial (so 'locales')
-      # e o marcador path.txt, fazendo o install.js pular o download.
-      - name: Garantir binário do Electron
-        shell: pwsh
-        run: |
-          echo "ELECTRON_SKIP_BINARY_DOWNLOAD = '$env:ELECTRON_SKIP_BINARY_DOWNLOAD'"
-          echo "npm_config_electron_skip_binary_download = '$env:npm_config_electron_skip_binary_download'"
-          Remove-Item -Recurse -Force node_modules/electron/dist -ErrorAction SilentlyContinue
-          Remove-Item -Force node_modules/electron/path.txt -ErrorAction SilentlyContinue
-          Remove-Item -Recurse -Force "$env:LOCALAPPDATA\electron\Cache" -ErrorAction SilentlyContinue
-          $env:DEBUG = "@electron/get:*"
-          node node_modules/electron/install.js
-          Write-Host "install.js exit = $LASTEXITCODE"
-          echo "=== conteudo dist apos install ==="
-          Get-ChildItem node_modules/electron/dist -ErrorAction SilentlyContinue | Select-Object Name | Format-Table -AutoSize
-          $ok = Test-Path node_modules/electron/dist/electron.exe
-          echo "electron.exe presente? $ok"
-          if (-not $ok) { echo "::error::Falha ao baixar o binario do Electron"; exit 1 }
-
-      # Roda o build unificado do seu package.json (backend + frontend + desktop)
       - name: Build (backend + frontend + desktop)
         run: pnpm build
         env:
           NODE_ENV: production
 
-      # Roda apenas se houver falha no build acima para te ajudar a debugar
-      - name: Verificar binário do Electron (diagnóstico em falha)
-        if: failure()
-        shell: pwsh
-        run: |
-          echo "=== node_modules/electron existe? ==="
-          Test-Path node_modules/electron
-          echo "=== dist/electron.exe existe? ==="
-          Test-Path node_modules/electron/dist/electron.exe
-          echo "=== conteudo de node_modules/electron/dist ==="
-          Get-ChildItem node_modules/electron/dist -ErrorAction SilentlyContinue | Select-Object Name, Length | Format-Table -AutoSize
-          echo "=== electron --version ==="
-          pnpm exec electron --version
-          echo "exit: $LASTEXITCODE"
-
-      # Removido o 'if: always()' para impedir que gere pacotes corrompidos caso o build falhe
       - name: Gerar instalador .msi
         env:
           DEBUG: electron-forge:*
         shell: pwsh
         run: |
           pnpm run make:win
-          Write-Host "=== make exit code = $LASTEXITCODE ==="
+          Write-Host "=== Processo de empacotamento concluído com código: $LASTEXITCODE ==="
 
-      - name: Listar saída do make (diagnóstico)
+      - name: Diagnóstico pós-build (Lista arquivos gerados)
         if: always()
         shell: pwsh
         run: |
           if (Test-Path out) {
-            Get-ChildItem -Recurse out\make | Select-Object FullName, Length | Format-Table -AutoSize
+            Write-Host "=== Conteúdo da pasta out/make ==="
+            Get-ChildItem -Recurse out\make -ErrorAction SilentlyContinue | Select-Object FullName, Length | Format-Table -AutoSize
           } else {
-            echo "pasta 'out' nao existe"
+            Write-Host "A pasta de saída 'out' nao foi gerada pelo Electron Forge."
           }
 
-      # Só publica os artefatos se o fluxo tiver sucesso até o final
-      - name: Publicar instaladores como artefato
+      - name: Publicar instaladores como artefato do GitHub
         if: success()
         uses: actions/upload-artifact@v4
         with:
