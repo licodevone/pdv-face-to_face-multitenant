@@ -66,11 +66,12 @@ jobs:
           DEBUG: electron-forge:*
         shell: pwsh
         run: |
-          pnpm exec electron-forge package -c forge.config.cjs
+          pnpm exec electron-forge package
           Write-Host "=== package exit code = $LASTEXITCODE ==="
           Get-ChildItem -Recurse out -ErrorAction SilentlyContinue | Select-Object FullName | Format-Table -AutoSize
 
       - name: Gerar instalador .msi
+        if: always()
         env:
           DEBUG: electron-forge:*
         shell: pwsh
