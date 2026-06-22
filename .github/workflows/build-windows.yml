@@ -52,17 +52,18 @@ jobs:
         run: pnpm install --frozen-lockfile
         working-directory: frontend
 
-      # O cache do pnpm pode restaurar o Electron sem o binário (dist/ vazio).
-      # Forçamos o postinstall do Electron para baixar electron.exe.
+      # O store do pnpm pode restaurar o Electron com dist/ parcial (so 'locales')
+      # e o marcador path.txt, fazendo o install.js pular o download.
+      # Apagamos esses restos e forcamos um download limpo do binario.
       - name: Garantir binário do Electron
         shell: pwsh
         run: |
-          pnpm rebuild electron
-          if (-not (Test-Path node_modules/electron/dist/electron.exe)) {
-            echo "rebuild nao trouxe o binario; rodando install.js diretamente"
-            node node_modules/electron/install.js
-          }
-          echo "electron.exe presente? $(Test-Path node_modules/electron/dist/electron.exe)"
+          Remove-Item -Recurse -Force node_modules/electron/dist -ErrorAction SilentlyContinue
+          Remove-Item -Force node_modules/electron/path.txt -ErrorAction SilentlyContinue
+          node node_modules/electron/install.js
+          $ok = Test-Path node_modules/electron/dist/electron.exe
+          echo "electron.exe presente? $ok"
+          if (-not $ok) { echo "::error::Falha ao baixar o binario do Electron"; exit 1 }
 
       - name: Build (backend + frontend + desktop)
         run: pnpm build
