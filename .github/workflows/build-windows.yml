@@ -44,7 +44,7 @@ jobs:
 
       - name: Instalar dependências (raiz)
         # Instalamos ignorando scripts automáticos para evitar bloqueios de segurança do pnpm v10 no CI
-        run: pnpm install --frozen-lockfile --ignore-scripts
+        run: pnpm install --frozen-lockfile --ignore-scripts --config.package-import-method=copy
 
       - name: Forçar Download Limpo do Binário do Electron
         shell: pwsh
