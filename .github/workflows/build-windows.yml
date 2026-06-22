@@ -40,29 +40,40 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: 'pnpm'
+          # REMOVIDO O CACHE AUTOMÁTICO DO PNPM PARA LIMPAR O AMBIENTE DE BUILDS ANTERIORES CORROMPIDOS
 
-      - name: Configurar pnpm para modo Isolado (Hoisted)
+      - name: Configurar pnpm para Isolamento Total (Hoisted)
         shell: pwsh
         run: |
-          # Cria um arquivo .npmrc temporário que desativa o cache virtual do pnpm v10
-          # Isso faz o node_modules herdar uma estrutura real compatível com o instalador do Electron
-          Set-Content -Path .npmrc -Value "node-linker=hoisted`nside-effects-cache=false"
+          # Desativa o cache global do pnpm e força estrutura clássica de node_modules
+          Set-Content -Path .npmrc -Value "node-linker=hoisted`nside-effects-cache=false`nstore-dir=./.pnpm-store"
 
       - name: Instalar dependências (raiz)
-        # O pnpm agora vai baixar e instalar o Electron de forma real, executando seus scripts nativos
+        # Permite a execução dos scripts nativos e desativa o bloqueio do pnpm v10
         run: pnpm install --frozen-lockfile --config.allow-scripts=true
 
-      - name: Validar Binário do Electron
+      - name: Forçar Download Manual do Electron Executável (Bypass de segurança)
         shell: pwsh
+        env:
+          # Força a API do Electron a baixar o binário de produção ignorando qualquer cache local
+          ELECTRON_SKIP_BINARY_DOWNLOAD: ""
+          FORCE_ELECTRON_DOWNLOAD: "true"
         run: |
-          # Checagem imediata para garantir que o hoisting funcionou e o arquivo existe
+          Write-Host "Iniciando limpeza e download forçado do Electron..."
+          # Remove pastas fantasmas criadas pelo cache do repositório
+          Remove-Item -Recurse -Force node_modules/electron/dist -ErrorAction SilentlyContinue
+          Remove-Item -Force node_modules/electron/path.txt -ErrorAction SilentlyContinue
+          
+          # Executa diretamente via Node.js o script instalador oficial da dependência
+          node node_modules/electron/install.js
+          
+          # Validação final rígida antes de prosseguir para o build
           $exePresente = Test-Path node_modules/electron/dist/electron.exe
           if (-not $exePresente) {
-            Write-Error "::error::O arquivo electron.exe continua ausente após o hoisting!"
+            Write-Error "::error::O arquivo electron.exe continua ausente após o download forçado!"
             exit 1
           } else {
-            Write-Host "✅ Sucesso! Binário electron.exe encontrado e pronto."
+            Write-Host "✅ SUCESSO ABSOLUTO: Binário electron.exe encontrado e pronto para o build."
           }
 
       - name: Gerar artefatos do Prisma ORM
